@@ -26,7 +26,7 @@ public class GameBoy {
 		cpu = new CPU(this);
 	}
 	
-	public void executeClockCycle() {
+	public void run() {
 		//System.out.println("next clock cycle");
 		cpu.fetchNextOpcode();
 		cpu.decodeAndExecuteOpcode();

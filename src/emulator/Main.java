@@ -28,7 +28,7 @@ public class Main extends Thread{
 		while(true){
 			long startTime = System.nanoTime();
 			
-			gameBoy.executeClockCycle();
+			gameBoy.run();
 			
 			long endTime = System.nanoTime();
 			long stallTimeNano = Math.max(((NANOSECONDS_IN_SECOND/PROCESSOR_DAMPED_FREQUENCY_HZ) 
