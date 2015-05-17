@@ -579,7 +579,7 @@ public class CPU {
 		
 		case 0x70: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_B];
+			writeByteToMemory(address, registers[INDEX_B]);
 			
 			M += 2;
 			T += 8;
@@ -589,7 +589,7 @@ public class CPU {
 		
 		case 0x71: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_C];
+			writeByteToMemory(address, registers[INDEX_C]);
 			
 			M += 2;
 			T += 8;
@@ -599,7 +599,7 @@ public class CPU {
 		
 		case 0x72: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_D];
+			writeByteToMemory(address, registers[INDEX_D]);
 			
 			M += 2;
 			T += 8;
@@ -609,7 +609,7 @@ public class CPU {
 		
 		case 0x73: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_E];
+			writeByteToMemory(address, registers[INDEX_E]);
 			
 			M += 2;
 			T += 8;
@@ -619,7 +619,7 @@ public class CPU {
 		
 		case 0x74: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_H];
+			writeByteToMemory(address, registers[INDEX_H]);
 			
 			M += 2;
 			T += 8;
@@ -629,7 +629,7 @@ public class CPU {
 		
 		case 0x75: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_L];
+			writeByteToMemory(address, registers[INDEX_L]);
 			
 			M += 2;
 			T += 8;
@@ -639,7 +639,7 @@ public class CPU {
 		
 		case 0x36: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = gameBoy.memory[pc];
+			writeByteToMemory(address, gameBoy.memory[pc]);
 			pc += 1;
 			
 			M += 3;
@@ -746,7 +746,7 @@ public class CPU {
 		
 		case 0x02: {
 			char address = (char)((registers[INDEX_B] << 8) | registers[INDEX_C]);
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -756,7 +756,7 @@ public class CPU {
 		
 		case 0x12: {
 			char address = (char)((registers[INDEX_E] << 8) | registers[INDEX_E]);
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -766,7 +766,7 @@ public class CPU {
 		
 		case 0x77: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -777,7 +777,7 @@ public class CPU {
 		case 0xEA: {
 			char address = (char)(gameBoy.memory[pc] | (gameBoy.memory[pc+1] << 8));
 			pc += 2;
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			M += 4;
 			T += 16;
@@ -797,7 +797,7 @@ public class CPU {
 		
 		case 0xE2: {
 			char address = (gameBoy.memory[0xFF00 + registers[INDEX_C]]);
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -821,7 +821,7 @@ public class CPU {
 		
 		case 0x32: {
 			char address = (char)((registers[INDEX_H] << 8) & registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			address--;
 			registers[INDEX_H] = (char)((address >> 8) & 0xF);
@@ -849,7 +849,7 @@ public class CPU {
 		
 		case 0x22: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			gameBoy.memory[address] = registers[INDEX_A];
+			writeByteToMemory(address, registers[INDEX_A]);
 			
 			address++;
 			registers[INDEX_H] = (char)((address >> 8) & 0xF);
@@ -1750,17 +1750,12 @@ public class CPU {
 		}
 		
 		case 0x20: {
-			System.out.println("gameBoy.memory[pc]: " + Integer.toHexString(gameBoy.memory[pc]));
 			byte signedImmediate = (byte)(gameBoy.memory[pc]);
-			System.out.println("as short: " + Integer.toHexString(signedImmediate));
-			System.out.println(signedImmediate);
 			pc += 1;
 			
 			//check not zero flag
 			if(((registers[INDEX_F] & ZERO_BIT) >> 4) == 0){
-				System.out.println("old pc: " + Integer.toHexString(pc));
 				pc = (char)(pc + signedImmediate);
-				System.out.println("new pc: " + Integer.toHexString(pc));
 			}
 			
 			break;
@@ -1772,6 +1767,17 @@ public class CPU {
 		}
 	}
 	
+	void writeByteToMemory(char address, char data){
+		gameBoy.memory[address] = data;
+		
+		//echo the 8kb internal RAM
+		if(address >= 0xC000 && address <  0xE000){
+			char echoAddress = (char)(address + 0x2000);
+			gameBoy.memory[echoAddress] = data; 
+		}
+		
+	}
+	
 	private void init() {
 		
 		registers = new char[8];
@@ -1779,6 +1785,44 @@ public class CPU {
 		//The entry point of the program
 		pc = 0x0100;
 		sp = 0xFFFE;
+		
+		//initial data loaded into RAM/registers
+		registers[INDEX_A] = 0x01;	registers[INDEX_F] = 0xB0;
+		registers[INDEX_B] = 0x00;	registers[INDEX_C] = 0x13;
+		registers[INDEX_D] = 0x00;	registers[INDEX_E] = 0xD8;
+		registers[INDEX_L] = 0x01;	registers[INDEX_L] = 0x4D;
+		
+		gameBoy.memory[0xFF05] = 0x00;	//TIMA
+		gameBoy.memory[0xFF06] = 0x00;	//TMA
+		gameBoy.memory[0xFF07] = 0x00;	//TAC
+		gameBoy.memory[0xFF10] = 0x80;	//NR10
+		gameBoy.memory[0xFF11] = 0xBF;	//NR11
+		gameBoy.memory[0xFF12] = 0xF3;	//NR12
+		gameBoy.memory[0xFF14] = 0xBF;	//NR14
+		gameBoy.memory[0xFF16] = 0x3F;	//NR21
+		gameBoy.memory[0xFF17] = 0x00;	//NR22
+		gameBoy.memory[0xFF19] = 0xBF;	//NR24
+		gameBoy.memory[0xFF1A] = 0x7F;	//NR30
+		gameBoy.memory[0xFF1B] = 0xFF;	//NR31
+		gameBoy.memory[0xFF1C] = 0x9F;	//NR32
+		gameBoy.memory[0xFF1E] = 0xBF;	//NR33
+		gameBoy.memory[0xFF20] = 0xFF;	//NR41
+		gameBoy.memory[0xFF21] = 0x00;	//NR42
+		gameBoy.memory[0xFF22] = 0x00;	//NR43
+		gameBoy.memory[0xFF23] = 0xBF;	//NR30
+		gameBoy.memory[0xFF24] = 0x77;	//NR50
+		gameBoy.memory[0xFF25] = 0xF3;	//NR51
+		gameBoy.memory[0xFF26] = 0xF1; 	//NR52, $F0 for super gameboy
+		gameBoy.memory[0xFF40] = 0x91;	//LCDC
+		gameBoy.memory[0xFF42] = 0x00;	//SCY
+		gameBoy.memory[0xFF43] = 0x00;	//SCX
+		gameBoy.memory[0xFF45] = 0x00;	//LYC
+		gameBoy.memory[0xFF47] = 0xFC;	//BGP
+		gameBoy.memory[0xFF48] = 0xFF;	//OBPO
+		gameBoy.memory[0xFF49] = 0xFF;	//OBP1
+		gameBoy.memory[0xFF4A] = 0x00;	//WY
+		gameBoy.memory[0xFF4B] = 0x00;	//WX
+		gameBoy.memory[0xFFFF] = 0x00;	//IE
 	}
 	
 	

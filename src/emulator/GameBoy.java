@@ -2,7 +2,11 @@ package emulator;
 
 public class GameBoy {
 	
-	CPU cpu;
+	private CPU cpu;
+	
+	private GPU gpu;
+	
+	private ScreenFrame screenFrame;
 	
 	public char[] memory;
 	
@@ -22,8 +26,11 @@ public class GameBoy {
 	}
 	
 	private void init() {
-		memory = new char[65535];
+		memory = new char[65536];
 		cpu = new CPU(this);
+		gpu = new GPU(this);
+		screenFrame = new ScreenFrame();
+
 	}
 	
 	public void run() {

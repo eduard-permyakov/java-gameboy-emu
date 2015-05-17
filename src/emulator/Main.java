@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Main extends Thread{
 	
-	final static int PROCESSOR_FREQUENCY_HZ = 4190;
+	final static int PROCESSOR_FREQUENCY_HZ = 4194304;
 	final static int NANOSECONDS_IN_SECOND = 1000000000;
 	
 	final static int PROCESSOR_DAMPING_FACTOR = 20;
@@ -14,14 +14,13 @@ public class Main extends Thread{
 	private GameBoy gameBoy;
 	private RomLoader romLoader;
 	
-	private ScreenFrame screenFrame;
+	//private ScreenFrame screenFrame;
 	
 	public Main() {
 		gameBoy = new GameBoy();
+		
 		romLoader = new RomLoader(gameBoy);
 		romLoader.loadROM("./TestROMs/Tetris.gb");
-		
-		screenFrame = new ScreenFrame();
 	}
 	
 	public void run() {
