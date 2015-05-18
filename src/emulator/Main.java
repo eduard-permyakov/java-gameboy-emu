@@ -21,6 +21,8 @@ public class Main extends Thread{
 		
 		romLoader = new RomLoader(gameBoy);
 		romLoader.loadROM("./TestROMs/Tetris.gb");
+		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
+		
 	}
 	
 	public void run() {
@@ -35,7 +37,8 @@ public class Main extends Thread{
 			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
 			
 			try {
-				Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
+				Thread.sleep(0);
+				//Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

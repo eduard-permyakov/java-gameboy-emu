@@ -4,7 +4,7 @@ public class GameBoy {
 	
 	private CPU cpu;
 	
-	private GPU gpu;
+	private LCDController lcd;
 	
 	private ScreenFrame screenFrame;
 	
@@ -28,13 +28,20 @@ public class GameBoy {
 	private void init() {
 		memory = new char[65536];
 		cpu = new CPU(this);
-		gpu = new GPU(this);
+		lcd = new LCDController(this);
 		screenFrame = new ScreenFrame();
 
 	}
 	
+	public void DMATransfer() {
+		char sourceAddress = (char)(((memory[LCDController.DMA_REGISTER_ADDR] / 0x100) << 8) | 0x0);
+		char destinationAddress = 0xFE00;
+		for(int i = 0; i <= 0x9F; i++){
+			memory[destinationAddress + i] = memory[sourceAddress + i];
+		}
+	}
+	
 	public void run() {
-		//System.out.println("next clock cycle");
 		cpu.fetchNextOpcode();
 		cpu.decodeAndExecuteOpcode();
 	}
