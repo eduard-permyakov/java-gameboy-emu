@@ -71,9 +71,13 @@ public class CPU {
 			}
 			
 			case 0x11: {
-				char carryFlag = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
-												
-				registers[INDEX_F] |= (((registers[INDEX_C] >> 3)&0xFF) & CARRY_BIT);
+				char carryFlag = (char)(((registers[INDEX_F]) >> 4) & 0x1);
+				
+				if(((registers[INDEX_C] >> 7) &0x1) > 0)
+					registers[INDEX_F] |= CARRY_BIT;
+				else
+					registers[INDEX_F] &= ~CARRY_BIT;
+				
 				registers[INDEX_F] &= ~OP_BIT;
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 				
@@ -83,9 +87,11 @@ public class CPU {
 					registers[INDEX_F] |= ZERO_BIT;
 				else
 					registers[INDEX_F] &= ~ZERO_BIT;
+
 				
-				M += 2;
-				T += 8;
+				
+				M += 1;
+				T += 4;
 				
 				break;
 			}
@@ -855,8 +861,8 @@ public class CPU {
 			registers[INDEX_A] = gameBoy.memory[address];
 			
 			address--;
-			registers[INDEX_H] = (char)((address >> 8) & 0xF);
-			registers[INDEX_L] = (char)(address & 0xF);
+			registers[INDEX_H] = (char)(address >> 8);
+			registers[INDEX_L] = (char)(address & 0xFF);
 			
 			M += 2;
 			T += 8;
@@ -883,8 +889,8 @@ public class CPU {
 			registers[INDEX_A] = gameBoy.memory[address];
 			
 			address++;
-			registers[INDEX_H] = (char)((address >> 8) & 0xF);
-			registers[INDEX_L] = (char)(address & 0xF);
+			registers[INDEX_H] = (char)(address >> 8);
+			registers[INDEX_L] = (char)(address & 0xFF);
 			
 			M += 2;
 			T += 8;
@@ -897,8 +903,8 @@ public class CPU {
 			writeByteToMemory(address, registers[INDEX_A]);
 			
 			address++;
-			registers[INDEX_H] = (char)((address >> 8) & 0xF);
-			registers[INDEX_L] = (char)(address & 0xF);
+			registers[INDEX_H] = (char)(address >> 8);
+			registers[INDEX_L] = (char)(address & 0xFF);
 			
 			M += 2;
 			T += 8;
@@ -921,6 +927,9 @@ public class CPU {
 			char immediate = gameBoy.memory[++pc];
 			
 			registers[INDEX_A] = gameBoy.memory[0xFF00 + immediate];
+			
+			if(registers[INDEX_A] != 0)
+				System.out.println("break");
 			
 			M += 3;
 			T += 12;
@@ -998,7 +1007,7 @@ public class CPU {
 			char address = (char)(sp + immediate);
 			
 			registers[INDEX_H] = (char)(address << 8);
-			registers[INDEX_L] = (char)(address & 0xF);
+			registers[INDEX_L] = (char)(address & 0xFF);
 			
 			//reset Z flag
 			registers[INDEX_F] &= ~ZERO_BIT;
@@ -1029,7 +1038,7 @@ public class CPU {
 			
 			char address = (char)((immediateMS << 8) | immediateLS);
 			
-			gameBoy.memory[address] = (char)(sp & 0xF);
+			gameBoy.memory[address] = (char)(sp & 0xFF);
 			gameBoy.memory[address+1] = (char)(sp >> 8);
 			
 			M += 5;
@@ -1165,7 +1174,7 @@ public class CPU {
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
 			//set c flag
-			if(result > 0xF)
+			if(result > 0xFF)
 				registers[INDEX_F] |= CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
@@ -1197,7 +1206,7 @@ public class CPU {
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
 			//set c flag
-			if(result > 0xF)
+			if(result > 0xFF)
 				registers[INDEX_F] |= CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
@@ -1620,7 +1629,7 @@ public class CPU {
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			registers[INDEX_A] = (char)(result & 0xF);
+			registers[INDEX_A] = (char)(result & 0xFF);
 			
 			M += 1;
 			T += 4;
@@ -1652,7 +1661,7 @@ public class CPU {
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			registers[INDEX_A] = (char)(result & 0xF);
+			registers[INDEX_A] = (char)(result & 0xFF);
 			
 			M += 1;
 			T += 4;
@@ -1685,7 +1694,7 @@ public class CPU {
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			registers[INDEX_A] = (char)(result & 0xF);
+			registers[INDEX_A] = (char)(result & 0xFF);
 			
 			M += 1;
 			T += 4;
@@ -1718,7 +1727,7 @@ public class CPU {
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			registers[INDEX_A] = (char)(result & 0xF);
+			registers[INDEX_A] = (char)(result & 0xFF);
 			
 			M += 1;
 			T += 4;
@@ -1744,7 +1753,7 @@ public class CPU {
  		}
 		
 		case 0xAF: {
-			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_A]) & 0xF);
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_A]) & 0xFF);
 			
 			if(registers[INDEX_A] == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -1764,7 +1773,7 @@ public class CPU {
 		case 0x05: {
 			char result = (char) (registers[INDEX_B]-1);
 			
-			if(registers[INDEX_B] == 0)
+			if(result == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1824,15 +1833,16 @@ public class CPU {
 		
 		case 0xCD: {
 			
-			sp --;
-			gameBoy.memory[sp] = (char)(pc &0xFF);
-			sp--;
-			gameBoy.memory[sp] = (char)(pc >> 8);
-			
 			char immediateLS = gameBoy.memory[++pc];
 			char immediateMS = gameBoy.memory[++pc];
+						
+			sp --;
+			gameBoy.memory[sp] = (char)(pc+1 &0xFF);
+			sp--;
+			gameBoy.memory[sp] = (char)(pc+1 >> 8);
 			
 			pc = (char)((immediateMS << 8) | immediateLS);
+
 			
 			M += 6;
 			T += 24;
@@ -1842,9 +1852,13 @@ public class CPU {
 		
 		case 0x17: {
 			
-			char carryFlag = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char carryFlag = (char)(((registers[INDEX_F]) >> 4) & 0x1);
 			
-			registers[INDEX_F] |= ((registers[INDEX_A] >> 3) & CARRY_BIT);
+			if(((registers[INDEX_A] >> 7) &0x1) > 0)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
 			registers[INDEX_F] &= ~OP_BIT;
 			registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
@@ -1854,6 +1868,7 @@ public class CPU {
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
+			
 			
 			M += 1;
 			T += 4;
@@ -1878,9 +1893,9 @@ public class CPU {
 		
 		case 0xC9: {
 			
-			char retAddLS = gameBoy.memory[sp];
-			sp ++;
 			char retAddMS = gameBoy.memory[sp];
+			sp ++;
+			char retAddLS = gameBoy.memory[sp];
 			pc ++;
 			
 			pc = (char)((retAddMS << 8) | retAddLS);
@@ -1910,7 +1925,7 @@ public class CPU {
 			
 			registers[INDEX_F] |= OP_BIT;
 			
-			if((registers[INDEX_A] &0x7) + (immediate &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) < (immediate &0xF))
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1919,11 +1934,154 @@ public class CPU {
 				registers[INDEX_F] |= CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
-			
+						
 			M += 2;
 			T += 8;
 			
 			break;
+		}
+		
+		case 0x13: {
+			
+			char value = (char)((registers[INDEX_D] << 8) | registers[INDEX_E]);
+			value++;
+			
+			registers[INDEX_D] = (char)(value >> 8);
+			registers[INDEX_E] = (char)(value & 0xFF);
+			
+			M += 2;
+			T += 8;
+
+			
+			break;
+		}
+		
+		case 0x3D: {
+			char result = (char) (registers[INDEX_A]-1);
+			
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] & 0x7) == 0)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_A] = result;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x28: {
+			byte signedImmediate = (byte)(gameBoy.memory[++pc]);
+			
+			//check not zero flag
+			if(((registers[INDEX_F] & ZERO_BIT) >> 4) != 0){
+				pc = (char)(pc +1 + signedImmediate); //TODO: hyper sketch +1
+				
+				M += 3;
+				T += 12;
+				return;
+			}else{
+				M += 2;
+				T += 8;
+			}
+			
+			break;
+		}
+		
+		case 0x0D: {
+			char result = (char) (registers[INDEX_C]-1);
+			
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_C] & 0x7) == 0)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_C] = result;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x18: {
+			byte signedImmediate = (byte)gameBoy.memory[++pc];
+			pc = (char)(pc +1 + signedImmediate); //TODO: hyper sketch +1
+			
+			//these vals are not agreed upon?
+			M += 2;
+			T += 8;
+			
+			return;
+		}
+		
+		case 0x04: {
+			int result = registers[INDEX_B]+1;
+			
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((registers[INDEX_B] &0x7) + 1 > 0x7)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_B] = (char)result;
+			
+			break;
+		}
+		
+		case 0x90: {
+			char result = (char)(registers[INDEX_A] - registers[INDEX_B]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0x7) < (registers[INDEX_B] &0x7))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_B])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+			
 		}
 		
 			default:
