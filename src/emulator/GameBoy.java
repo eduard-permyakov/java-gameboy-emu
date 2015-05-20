@@ -4,6 +4,8 @@ import java.util.concurrent.TimeUnit;
 
 public class GameBoy extends Thread{
 	
+	boolean lcdControllerIsIdle;
+	
 	private int machineCycles;
 	private int clockCycles;
 	
@@ -42,6 +44,8 @@ public class GameBoy extends Thread{
 		cpu = new CPU(this);
 		lcd = new LCDController(this);
 		screenFrame = new ScreenFrame();
+		
+		lcdControllerIsIdle = false;
 
 	}
 	
@@ -83,10 +87,11 @@ public class GameBoy extends Thread{
 //		cpu.decodeAndExecuteOpcode();
 //	}
 	
-	public void LCDControllerDidNotifyOfStateCompletion(){
+	public synchronized void LCDControllerDidNotifyOfStateCompletion(){
+		lcdControllerIsIdle = true;
 		cpu.setState(CPUState.CPU_STATE_EXECUTING);
 	}
-	
+
 	//GET/SET
 	
 	public synchronized int getMachineCycles() {
@@ -104,36 +109,43 @@ public class GameBoy extends Thread{
 	public synchronized void setClockCycles(int clockCycles){
 		this.clockCycles = clockCycles;
 		LCDControllerState prevState = lcd.getLCDState();
-		LCDControllerState nextState = null;
+		LCDControllerState newState = null;
 		
 		if(clockCycles%LCDController.TOTAL_REFRESH_CYCLES > LCDController.TOTAL_PRE_VBLANK_CYCLES){
 			
-			lcd.setLCDState(LCDControllerState.LCD_STATE_VBLANK);
-			nextState = LCDControllerState.LCD_STATE_VBLANK;
+			newState = LCDControllerState.LCD_STATE_VBLANK;
 			
 		}else{
-			
 			if(clockCycles%LCDController.HORIZONTAL_LINE_CYCLES < LCDController.READING_OAM_ONLY_CYCLES){
 				
-				lcd.setLCDState(LCDControllerState.LCD_STATE_READING_OAM_ONLY);
-				nextState = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
+				newState = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
 				
-			}else if(clockCycles%LCDController.TOTAL_REFRESH_CYCLES < LCDController.READING_OAM_AND_VRAM_CYCLES){
+			}else if(clockCycles%LCDController.HORIZONTAL_LINE_CYCLES < (LCDController.READING_OAM_AND_VRAM_CYCLES
+					+ LCDController.READING_OAM_ONLY_CYCLES)){
 				
-				lcd.setLCDState(LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM);
-				nextState = LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM;
+				newState = LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM;
 				
-			}else if(clockCycles%LCDController.TOTAL_REFRESH_CYCLES < LCDController.HBLANK_CYCLES){
+			}else{
 				
-				lcd.setLCDState(LCDControllerState.LCD_STATE_HBLANK);
-				nextState = LCDControllerState.LCD_STATE_HBLANK;
+				newState = LCDControllerState.LCD_STATE_HBLANK;
 				
 			}
 			
 		}
 		
-		if(prevState != nextState)
-			cpu.setState(CPUState.CPU_STATE_WAITING);
+		if(lcd.getLCDState() != newState) {
+			
+			if(lcdControllerIsIdle){
+				lcd.setLCDState(newState);
+				lcdControllerIsIdle = false;
+				lcd.run();
+			}else{
+				cpu.setState(CPUState.CPU_STATE_WAITING);
+			}
+			//System.out.println("Old State: "+lcd.getLCDState());
+			//System.out.println("Set LCD State: "+newState);
+
+		}
 	}
 
 }

@@ -1,5 +1,7 @@
 package emulator;
 
+import java.util.concurrent.CountDownLatch;
+
 enum CPUState{
 	CPU_STATE_EXECUTING,
 	CPU_STATE_WAITING
@@ -8,6 +10,7 @@ enum CPUState{
 public class CPU extends Thread{
 	
 	private GameBoy gameBoy;
+	private CountDownLatch latch;
 	
 	private CPUState state;
 	
@@ -45,18 +48,27 @@ public class CPU extends Thread{
 			if(this.state == CPUState.CPU_STATE_EXECUTING){
 				fetchNextOpcode();
 				decodeAndExecuteOpcode();
-			}else{		     //CPUState.CPU_STATE_WAITING
+			}else{	
+				latch = new CountDownLatch(1);
 				try {
-					Thread.sleep(5);
+					latch.await();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+
 			}
+			System.out.println("CPU State: "+this.state);
+
 		}
 	}
 	
 	public synchronized void setState(CPUState state){
 		this.state = state;
+		if(state == CPUState.CPU_STATE_EXECUTING){
+			if(latch != null)
+				latch.countDown();
+		}
+
 	}
 	
 	public void fetchNextOpcode(){

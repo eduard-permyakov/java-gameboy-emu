@@ -1,5 +1,7 @@
 package emulator;
 
+import java.util.concurrent.CountDownLatch;
+
 enum LCDControllerState{
 	LCD_STATE_HBLANK,
 	LCD_STATE_VBLANK,
@@ -13,6 +15,7 @@ public class LCDController extends Thread{
 	private int y;
 
 	private GameBoy gameBoy;
+	public CountDownLatch latch;
 	
 	private LCDControllerState state;
 	
@@ -84,52 +87,50 @@ public class LCDController extends Thread{
 	
 	public LCDController(GameBoy gameBoy){
 		this.gameBoy = gameBoy;
+		this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
 		y = 0;
 	}
 	
 	public void run(){
-		while(true){
+		//while(true){
 			//updateState();
 			switch(this.state){
 			case LCD_STATE_HBLANK:
 				for(int i = 0; i < HBLANK_CYCLES; i++){}
 				y++;
 				
-				if(y < 144){
-					this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
-				}else{
-					this.state = LCDControllerState.LCD_STATE_VBLANK;
-					y = 0;
-				}
+				if(y == 144)
+					y =0;
 				
 				gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				break;
 			case LCD_STATE_VBLANK:
 				for(int i = 0; i < VBLANK_CYCLES; i++){}
-				this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
+				//this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
 				gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				break;
 			case LCD_STATE_READING_OAM_ONLY:
 				for(int i = 0; i < READING_OAM_ONLY_CYCLES; i++){}
-				this.state = LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM;
+				//this.state = LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM;
 				gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				break;
 			case LCD_STATE_READING_OAM_AND_VRAM:
 				for(int i = 0; i < READING_OAM_AND_VRAM_CYCLES; i++){}
-				this.state = LCDControllerState.LCD_STATE_HBLANK;
+				//this.state = LCDControllerState.LCD_STATE_HBLANK;
 				gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				break;
 				default:
+
 			}
-			System.out.println("LCD Controller State: " + this.state +"(y: "+y+")");
-		}
+			System.out.println("LCD Controller State: " + this.state +"(y: "+y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+		//}
 	}
 	
 	public synchronized void setLCDState(LCDControllerState state){
 		this.state = state;
 	}
 	
-	public LCDControllerState getLCDState(){
+	public synchronized LCDControllerState getLCDState(){
 		return this.state;
 	}
 
