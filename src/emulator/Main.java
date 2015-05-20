@@ -2,14 +2,7 @@ package emulator;
 
 import java.util.concurrent.TimeUnit;
 
-public class Main extends Thread{
-	
-	final static int PROCESSOR_FREQUENCY_HZ = 4194304;
-	final static int NANOSECONDS_IN_SECOND = 1000000000;
-	
-	final static int PROCESSOR_DAMPING_FACTOR = 20;
-	final static int PROCESSOR_DAMPED_FREQUENCY_HZ = 
-			(int)(PROCESSOR_FREQUENCY_HZ/PROCESSOR_DAMPING_FACTOR);
+public class Main{
 	
 	private GameBoy gameBoy;
 	private RomLoader romLoader;
@@ -23,31 +16,12 @@ public class Main extends Thread{
 		romLoader.loadROM("./TestROMs/Tetris.gb");
 		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
 		
-	}
-	
-	public void run() {
-		while(true){
-			long startTime = System.nanoTime();
-			
-			gameBoy.run();
-			
-			long endTime = System.nanoTime();
-			long stallTimeNano = Math.max(((NANOSECONDS_IN_SECOND/PROCESSOR_DAMPED_FREQUENCY_HZ) 
-					- (endTime - startTime)), 0);
-			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
-			
-			try {
-				Thread.sleep(0);
-				//Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		gameBoy.start();
+		
 	}
 	
 	public static void main(String[] args) {
 		Main main = new Main();
-		main.start();
 	}
 
 }

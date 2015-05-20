@@ -1,11 +1,18 @@
 package emulator;
 
-public class CPU {
+enum CPUState{
+	CPU_STATE_EXECUTING,
+	CPU_STATE_WAITING
+}
+
+public class CPU extends Thread{
 	
 	private GameBoy gameBoy;
 	
-	private char M; //machine cycles
-	private char T;	//clock cycles
+	private CPUState state;
+	
+	private int M; //machine cycles
+	private int T;	//clock cycles
 	
 	private char[] registers;
 	
@@ -33,6 +40,25 @@ public class CPU {
 		init();
 	}
 	
+	public void run(){
+		while(true){
+			if(this.state == CPUState.CPU_STATE_EXECUTING){
+				fetchNextOpcode();
+				decodeAndExecuteOpcode();
+			}else{		     //CPUState.CPU_STATE_WAITING
+				try {
+					Thread.sleep(5);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public synchronized void setState(CPUState state){
+		this.state = state;
+	}
+	
 	public void fetchNextOpcode(){
 		
 		currentOpcode = gameBoy.memory[pc];
@@ -41,8 +67,8 @@ public class CPU {
 	
 	public void decodeAndExecuteOpcode(){
 		
-		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+		//System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
+		//System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
 		switch(currentOpcode){
 		
@@ -2092,6 +2118,8 @@ public class CPU {
 		
 		//increment program counter
 		pc += 1;
+		gameBoy.setMachineCycles(M);
+		gameBoy.setClockCycles(T);
 
 	}
 	
@@ -2112,6 +2140,7 @@ public class CPU {
 	
 	private void init() {
 		
+		this.state = CPUState.CPU_STATE_EXECUTING;
 		registers = new char[8];
 		
 		//The entry point of the program

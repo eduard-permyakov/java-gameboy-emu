@@ -1,10 +1,30 @@
 package emulator;
 
-public class LCDController {
+enum LCDControllerState{
+	LCD_STATE_HBLANK,
+	LCD_STATE_VBLANK,
+	LCD_STATE_READING_OAM_ONLY,
+	LCD_STATE_READING_OAM_AND_VRAM
+}
+
+public class LCDController extends Thread{
 	
+	//temp
+	private int y;
+
 	private GameBoy gameBoy;
 	
-	public final static char LCDC_ADDR = 0xFF40; 					//LCD Control Register address
+	private LCDControllerState state;
+	
+	public final static int HBLANK_CYCLES					= 204;
+	public final static int VBLANK_CYCLES 					= 4560;
+	public final static int READING_OAM_ONLY_CYCLES			= 80;
+	public final static int READING_OAM_AND_VRAM_CYCLES		= 172;
+	public final static int HORIZONTAL_LINE_CYCLES			= 456;
+	public final static int TOTAL_REFRESH_CYCLES			= 70224;
+	public final static int TOTAL_PRE_VBLANK_CYCLES			= 65664;
+	
+	public final static char LCDC_ADDR 						= 0xFF40;//LCD Control Register address
 	
 	public final static char BG_DISPLAY_BIT 				= 0x01;	//0=Off, 1=On
 	public final static char OBJ_DISPLAY_ENABLE_BIT 		= 0x02;	//0=Off, 1=On
@@ -64,6 +84,53 @@ public class LCDController {
 	
 	public LCDController(GameBoy gameBoy){
 		this.gameBoy = gameBoy;
+		y = 0;
+	}
+	
+	public void run(){
+		while(true){
+			//updateState();
+			switch(this.state){
+			case LCD_STATE_HBLANK:
+				for(int i = 0; i < HBLANK_CYCLES; i++){}
+				y++;
+				
+				if(y < 144){
+					this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
+				}else{
+					this.state = LCDControllerState.LCD_STATE_VBLANK;
+					y = 0;
+				}
+				
+				gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				break;
+			case LCD_STATE_VBLANK:
+				for(int i = 0; i < VBLANK_CYCLES; i++){}
+				this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
+				gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				break;
+			case LCD_STATE_READING_OAM_ONLY:
+				for(int i = 0; i < READING_OAM_ONLY_CYCLES; i++){}
+				this.state = LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM;
+				gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				break;
+			case LCD_STATE_READING_OAM_AND_VRAM:
+				for(int i = 0; i < READING_OAM_AND_VRAM_CYCLES; i++){}
+				this.state = LCDControllerState.LCD_STATE_HBLANK;
+				gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				break;
+				default:
+			}
+			System.out.println("LCD Controller State: " + this.state +"(y: "+y+")");
+		}
+	}
+	
+	public synchronized void setLCDState(LCDControllerState state){
+		this.state = state;
+	}
+	
+	public LCDControllerState getLCDState(){
+		return this.state;
 	}
 
 }
