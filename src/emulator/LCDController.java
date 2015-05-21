@@ -1,6 +1,8 @@
 package emulator;
 
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 enum LCDControllerState{
 	LCD_STATE_HBLANK,
@@ -15,6 +17,7 @@ public class LCDController extends Thread{
 	private int y;
 
 	private GameBoy gameBoy;
+	public CyclicBarrier barrier;
 	public CountDownLatch latch;
 	
 	private LCDControllerState state;
@@ -85,45 +88,46 @@ public class LCDController extends Thread{
 	
 	//when sprites with different x coordinate values overlap, the one with the smaller x coordinate (closer to
 	
-	public LCDController(GameBoy gameBoy){
+	public LCDController(GameBoy gameBoy, CyclicBarrier barrier){
 		this.gameBoy = gameBoy;
+		this.barrier = barrier;
 		this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
 		y = 0;
 	}
 	
 	public void run(){
-		//while(true){
-			//updateState();
-			switch(this.state){
-			case LCD_STATE_HBLANK:
-				for(int i = 0; i < HBLANK_CYCLES; i++){}
-				y++;
+		//updateState();
+		switch(this.state){
+		case LCD_STATE_HBLANK:
+			for(int i = 0; i < HBLANK_CYCLES; i++){}				
+			y++;
 				
-				if(y == 144)
-					y =0;
+			if(y == 144)
+				y =0;
+			
+			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
-				gameBoy.LCDControllerDidNotifyOfStateCompletion();
-				break;
-			case LCD_STATE_VBLANK:
-				for(int i = 0; i < VBLANK_CYCLES; i++){}
-				//this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
-				gameBoy.LCDControllerDidNotifyOfStateCompletion();
-				break;
-			case LCD_STATE_READING_OAM_ONLY:
-				for(int i = 0; i < READING_OAM_ONLY_CYCLES; i++){}
-				//this.state = LCDControllerState.LCD_STATE_READING_OAM_AND_VRAM;
-				gameBoy.LCDControllerDidNotifyOfStateCompletion();
-				break;
-			case LCD_STATE_READING_OAM_AND_VRAM:
-				for(int i = 0; i < READING_OAM_AND_VRAM_CYCLES; i++){}
-				//this.state = LCDControllerState.LCD_STATE_HBLANK;
-				gameBoy.LCDControllerDidNotifyOfStateCompletion();
-				break;
-				default:
+			break;
+		case LCD_STATE_VBLANK:
+			for(int i = 0; i < VBLANK_CYCLES; i++){}
+			gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				
+			break;
+		case LCD_STATE_READING_OAM_ONLY:
+			for(int i = 0; i < READING_OAM_ONLY_CYCLES; i++){}
+			gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				
+			break;
+		case LCD_STATE_READING_OAM_AND_VRAM:
+			for(int i = 0; i < READING_OAM_AND_VRAM_CYCLES; i++){}
+				
+			gameBoy.LCDControllerDidNotifyOfStateCompletion();
+				
+			break;
+			default:
 
-			}
-			System.out.println("LCD Controller State: " + this.state +"(y: "+y+")"+"(clk: "+gameBoy.getClockCycles()+")");
-		//}
+		}
+		System.out.println("LCD Controller State: " + this.state +"(y: "+y+")"+"(clk: "+gameBoy.getClockCycles()+")");
 	}
 	
 	public synchronized void setLCDState(LCDControllerState state){

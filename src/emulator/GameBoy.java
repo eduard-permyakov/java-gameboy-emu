@@ -1,10 +1,11 @@
 package emulator;
 
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-public class GameBoy extends Thread{
+public class GameBoy{
 	
-	boolean lcdControllerIsIdle;
+	public boolean lcdControllerIsIdle;
 	
 	private int machineCycles;
 	private int clockCycles;
@@ -27,51 +28,32 @@ public class GameBoy extends Thread{
 	final static int IO_PORTS_ADDR 							= 0xFF00;
 	final static int INTERNAL_RAM_ADDR 						= 0xFF80;
 	final static int INTERRUPT_TABLE_REGISTER_ADDR 			= 0xFFFF;
-	
-	final static int PROCESSOR_FREQUENCY_HZ = 4194304;
-	final static int NANOSECONDS_IN_SECOND = 1000000000;
-	
-	final static int PROCESSOR_DAMPING_FACTOR = 20;
-	final static int PROCESSOR_DAMPED_FREQUENCY_HZ = 
-			(int)(PROCESSOR_FREQUENCY_HZ/PROCESSOR_DAMPING_FACTOR);
 		
 	public GameBoy() {
 		init();
 	}
 	
 	private void init() {
+		
+	    final CyclicBarrier barrier = new CyclicBarrier(1);
+		
 		memory = new char[65536];
-		cpu = new CPU(this);
-		lcd = new LCDController(this);
+		cpu = new CPU(this, barrier);
+		lcd = new LCDController(this, barrier);
 		screenFrame = new ScreenFrame();
 		
 		lcdControllerIsIdle = false;
 
 	}
 	
-	public void run() {
+	public void start() {
 		
-		cpu.start();
-		lcd.start();
-		
-		while(true){
-			long startTime = System.nanoTime();
-			
-			//gameBoy.run();
-			//System.out.println("Clock cycles: " + clockCycles);
-			
-			long endTime = System.nanoTime();
-			long stallTimeNano = Math.max(((NANOSECONDS_IN_SECOND/PROCESSOR_DAMPED_FREQUENCY_HZ) 
-					- (endTime - startTime)), 0);
-			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
-			
-			try {
-				//Thread.sleep(0);
-				Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+	    Thread cpuThread = new Thread(cpu);
+	    Thread lcdControllerThread = new Thread(lcd);
+
+	    cpuThread.start();
+	    lcdControllerThread.start();
+	    
 	}
 	
 	public void DMATransfer() {
@@ -82,13 +64,9 @@ public class GameBoy extends Thread{
 		}
 	}
 	
-//	public void run() {
-//		cpu.fetchNextOpcode();
-//		cpu.decodeAndExecuteOpcode();
-//	}
-	
 	public synchronized void LCDControllerDidNotifyOfStateCompletion(){
 		lcdControllerIsIdle = true;
+		notifyAll();
 		cpu.setState(CPUState.CPU_STATE_EXECUTING);
 	}
 
@@ -138,14 +116,15 @@ public class GameBoy extends Thread{
 			if(lcdControllerIsIdle){
 				lcd.setLCDState(newState);
 				lcdControllerIsIdle = false;
+				notifyAll();
 				lcd.run();
 			}else{
 				cpu.setState(CPUState.CPU_STATE_WAITING);
+
 			}
-			//System.out.println("Old State: "+lcd.getLCDState());
-			//System.out.println("Set LCD State: "+newState);
 
 		}
+
 	}
 
 }

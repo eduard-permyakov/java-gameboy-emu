@@ -1,6 +1,8 @@
 package emulator;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 enum CPUState{
 	CPU_STATE_EXECUTING,
@@ -9,8 +11,16 @@ enum CPUState{
 
 public class CPU extends Thread{
 	
+	final static int PROCESSOR_FREQUENCY_HZ = 4194304;
+	final static int NANOSECONDS_IN_SECOND = 1000000000;
+	
+	final static int PROCESSOR_DAMPING_FACTOR = 20;
+	final static int PROCESSOR_DAMPED_FREQUENCY_HZ = 
+			(int)(PROCESSOR_FREQUENCY_HZ/PROCESSOR_DAMPING_FACTOR);
+	
 	private GameBoy gameBoy;
-	private CountDownLatch latch;
+	public CyclicBarrier barrier;
+	
 	
 	private CPUState state;
 	
@@ -38,37 +48,47 @@ public class CPU extends Thread{
 		
 	private char currentOpcode;
 	
-	public CPU(GameBoy gameBoy) {
+	public CPU(GameBoy gameBoy, CyclicBarrier barrier) {
 		this.gameBoy = gameBoy;
+		this.barrier = barrier;
 		init();
 	}
 	
 	public void run(){
 		while(true){
+			
+			long startTime = System.nanoTime();
+			
 			if(this.state == CPUState.CPU_STATE_EXECUTING){
 				fetchNextOpcode();
 				decodeAndExecuteOpcode();
 			}else{	
-				latch = new CountDownLatch(1);
 				try {
-					latch.await();
-				} catch (InterruptedException e) {
+					barrier.await();
+				} catch (InterruptedException | BrokenBarrierException e) {
 					e.printStackTrace();
 				}
 
 			}
 			System.out.println("CPU State: "+this.state);
+			
+			long endTime = System.nanoTime();
+			long stallTimeNano = Math.max(((NANOSECONDS_IN_SECOND/PROCESSOR_DAMPED_FREQUENCY_HZ) 
+					- (endTime - startTime)), 0);
+			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
+			
+			try {
+				//Thread.sleep(0);
+				Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
 		}
 	}
 	
 	public synchronized void setState(CPUState state){
 		this.state = state;
-		if(state == CPUState.CPU_STATE_EXECUTING){
-			if(latch != null)
-				latch.countDown();
-		}
-
 	}
 	
 	public void fetchNextOpcode(){
