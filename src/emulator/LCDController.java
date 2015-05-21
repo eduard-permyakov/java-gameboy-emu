@@ -13,8 +13,7 @@ enum LCDControllerState{
 
 public class LCDController extends Thread{
 	
-	//temp
-	private int y;
+	private char y;
 
 	private GameBoy gameBoy;
 	public CyclicBarrier barrier;
@@ -96,14 +95,17 @@ public class LCDController extends Thread{
 	}
 	
 	public void run(){
-		//updateState();
+		
+		updateStatusRegister();
+		updateLYRegister();
+		
 		switch(this.state){
 		case LCD_STATE_HBLANK:
 			for(int i = 0; i < HBLANK_CYCLES; i++){}				
 			y++;
 				
-			if(y == 144)
-				y =0;
+			if(y > 144)
+				y = 0;
 			
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
@@ -127,7 +129,62 @@ public class LCDController extends Thread{
 			default:
 
 		}
-		System.out.println("LCD Controller State: " + this.state +"(y: "+y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+		//System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+	}
+	
+	private void updateStatusRegister(){
+		//LCD status register
+		//TODO: figure out the interrupts
+		if(gameBoy.memory[LYC_REGISTER_ADDR] == gameBoy.memory[LY_REGISTER_ADDR]){
+			gameBoy.memory[LCD_ADDR] |= LYC_EQ_LY_COINCIDEN_INTERRUPT;//if i-enabled
+			gameBoy.memory[LCD_ADDR] |= COINCIDENCE_FLAG_BIT;
+		}else{
+			gameBoy.memory[LCD_ADDR] &= ~LYC_EQ_LY_COINCIDEN_INTERRUPT;//if i-enabled
+			gameBoy.memory[LCD_ADDR] &= ~COINCIDENCE_FLAG_BIT;
+		}
+		
+		//hblank
+		if(this.state == LCDControllerState.LCD_STATE_HBLANK){
+			gameBoy.memory[LCD_ADDR] |= MODE_0_H_BLANK_INTERRUPT_BIT;//if i-enabled
+		}else{
+			gameBoy.memory[LCD_ADDR] &= ~MODE_0_H_BLANK_INTERRUPT_BIT;//if i-enabled
+		}
+		
+		//vblank
+		if(this.state == LCDControllerState.LCD_STATE_VBLANK){
+			gameBoy.memory[LCD_ADDR] |= MODE_1_V_BLANK_INTERRUPT_BIT;//if i-enabled
+		}else{
+			gameBoy.memory[LCD_ADDR] &= ~MODE_1_V_BLANK_INTERRUPT_BIT;//if i-enabled
+		}
+		
+		//oam
+		if(this.state == LCDControllerState.LCD_STATE_READING_OAM_ONLY){
+			gameBoy.memory[LCD_ADDR] |= MODE_2_OAM_INTERRUPT;//if i-enabled
+		}else{
+			gameBoy.memory[LCD_ADDR] &= MODE_2_OAM_INTERRUPT;//if i-enabled
+		}
+		
+		//mode flag
+		char modeFlag;
+		switch(this.state){
+		case LCD_STATE_READING_OAM_ONLY:
+			modeFlag = 0b10;
+			break;
+		case LCD_STATE_VBLANK:
+			modeFlag = 0b01;
+			break;
+		case LCD_STATE_HBLANK:
+			modeFlag = 0b00;
+			break;
+			default:
+				return;
+		}
+		gameBoy.memory[LCD_ADDR] &= 0b00;
+		gameBoy.memory[LCD_ADDR] |= modeFlag;
+	}
+	
+	private void updateLYRegister() {
+		gameBoy.memory[LY_REGISTER_ADDR] = y;
 	}
 	
 	public synchronized void setLCDState(LCDControllerState state){

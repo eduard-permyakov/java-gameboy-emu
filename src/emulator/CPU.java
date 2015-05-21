@@ -70,7 +70,7 @@ public class CPU extends Thread{
 				}
 
 			}
-			System.out.println("CPU State: "+this.state);
+			//System.out.println("CPU State: "+this.state);
 			
 			long endTime = System.nanoTime();
 			long stallTimeNano = Math.max(((NANOSECONDS_IN_SECOND/PROCESSOR_DAMPED_FREQUENCY_HZ) 
@@ -78,8 +78,8 @@ public class CPU extends Thread{
 			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
 			
 			try {
-				//Thread.sleep(0);
-				Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
+				Thread.sleep(0);
+				//Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -99,8 +99,12 @@ public class CPU extends Thread{
 	
 	public void decodeAndExecuteOpcode(){
 		
-		//System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-		//System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+		if(pc == 0xF9){
+			System.out.println("PC = F9");
+		}
+		
+		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
+		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
 		switch(currentOpcode){
 		
@@ -985,10 +989,7 @@ public class CPU extends Thread{
 			char immediate = gameBoy.memory[++pc];
 			
 			registers[INDEX_A] = gameBoy.memory[0xFF00 + immediate];
-			
-			if(registers[INDEX_A] != 0)
-				System.out.println("break");
-			
+						
 			M += 3;
 			T += 12;
 			
@@ -1217,7 +1218,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_A]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] |= ~ZERO_BIT;
@@ -1226,7 +1227,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_A] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_A] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1249,7 +1250,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_B]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1258,7 +1259,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_B] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_B] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1281,7 +1282,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_C]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1290,7 +1291,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_C] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_C] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1313,7 +1314,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_D]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1322,7 +1323,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] |= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_D] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_D] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1345,7 +1346,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_E]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1354,7 +1355,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_E] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_E] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1377,7 +1378,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_H]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] |= ~ZERO_BIT;
@@ -1386,7 +1387,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_H] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_H] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1409,7 +1410,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + registers[INDEX_L]));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1418,7 +1419,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] |= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (registers[INDEX_L] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (registers[INDEX_L] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1439,7 +1440,7 @@ public class CPU extends Thread{
 		
 		case 0x86: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			int result = ((registers[INDEX_A] + gameBoy.memory[address]));
+			char result = (char)(((registers[INDEX_A] + gameBoy.memory[address])) &0xFF);
 			
 			//set z flag
 			if(result == 0)
@@ -1451,7 +1452,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (gameBoy.memory[address] &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (gameBoy.memory[address] &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1462,7 +1463,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			registers[INDEX_A] = (char)(result & 0xF);
+			registers[INDEX_A] = (char)(result & 0xFF);
 			
 			M += 2;
 			T += 8;
@@ -1475,7 +1476,7 @@ public class CPU extends Thread{
 			int result = ((registers[INDEX_A] + immediate));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1484,7 +1485,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] |= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) + (immediate &0x7) > 0x7)
+			if((registers[INDEX_A] &0xF) + (immediate &0xF) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1507,7 +1508,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_A] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1516,7 +1517,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_A] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_A] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1539,7 +1540,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_B] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1548,7 +1549,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_B] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_B] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1571,7 +1572,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_C] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1580,7 +1581,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_C] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_C] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1603,7 +1604,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_D] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1612,7 +1613,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_D] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_D] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1635,7 +1636,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_E] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1644,7 +1645,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_E] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_E] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1667,7 +1668,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_H] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1676,7 +1677,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_H] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_H] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1699,7 +1700,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + registers[INDEX_L] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1708,7 +1709,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (registers[INDEX_L] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (registers[INDEX_L] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1732,7 +1733,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + gameBoy.memory[address] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1741,7 +1742,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (gameBoy.memory[address] &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (gameBoy.memory[address] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1765,7 +1766,7 @@ public class CPU extends Thread{
 			int result = (registers[INDEX_A] + immediate + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
@@ -1774,7 +1775,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0x7) + (immediate &0x7) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0x7)
+			if(((registers[INDEX_A] &0xF) + (immediate &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1838,12 +1839,12 @@ public class CPU extends Thread{
 			
 			registers[INDEX_F] |= OP_BIT;
 			
-			if((registers[INDEX_B] & 0x7) == 0)
+			if((registers[INDEX_B] & 0xF) == 0)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
-			registers[INDEX_B] = result;
+			registers[INDEX_B] = (char)(result&0xFF);
 			
 			M += 1;
 			T += 4;
@@ -1872,14 +1873,14 @@ public class CPU extends Thread{
 		case 0x0C: {
 			int result = registers[INDEX_C]+1;
 			
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
 			
 			registers[INDEX_F] &= ~OP_BIT;
 			
-			if((registers[INDEX_C] &0x7) + 1 > 0x7)
+			if((registers[INDEX_C] &0xF) + 1 > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1972,6 +1973,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0xFE: {
+			
 			char immediate = gameBoy.memory[++pc];
 			
 			char result = (char)(registers[INDEX_A] - immediate);
@@ -2024,7 +2026,7 @@ public class CPU extends Thread{
 			
 			registers[INDEX_F] |= OP_BIT;
 			
-			if((registers[INDEX_A] & 0x7) == 0)
+			if((registers[INDEX_A] & 0xF) == 0)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -2065,7 +2067,7 @@ public class CPU extends Thread{
 			
 			registers[INDEX_F] |= OP_BIT;
 			
-			if((registers[INDEX_C] & 0x7) == 0)
+			if((registers[INDEX_C] & 0xF) == 0)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -2092,19 +2094,19 @@ public class CPU extends Thread{
 		case 0x04: {
 			int result = registers[INDEX_B]+1;
 			
-			if(result == 0)
+			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
 				registers[INDEX_F] &= ~ZERO_BIT;
 			
 			registers[INDEX_F] &= ~OP_BIT;
 			
-			if((registers[INDEX_B] &0x7) + 1 > 0x7)
+			if((registers[INDEX_B] &0xF) + 1 > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
-			registers[INDEX_B] = (char)result;
+			registers[INDEX_B] = (char)(result&0xFF);
 			
 			break;
 		}
@@ -2122,7 +2124,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] |= OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0x7) < (registers[INDEX_B] &0x7))
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_B] &0xF))
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -2140,6 +2142,106 @@ public class CPU extends Thread{
 			
 			break;	
 			
+		}
+		
+		case 0x1D: {
+			
+			char result = (char) (registers[INDEX_E]-1);
+			
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_E] & 0xF) == 0)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_E] = result;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+			 
+		}
+		
+		case 0x24:{
+			
+			int result = registers[INDEX_H]+1;
+			
+			if((result&0xFF) == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((registers[INDEX_H] &0xF) + 1 > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_H] = (char)result;
+			
+			break;	
+		}
+		
+		case 0x15: {
+			
+			char result = (char) (registers[INDEX_D]-1);
+			
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_D] & 0xF) == 0)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_D] = result;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xBE: {
+			
+			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			char value = gameBoy.memory[address];
+			
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 2;
+			T += 8;
+			
+			break;
 		}
 		
 			default:
