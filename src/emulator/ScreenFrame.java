@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 
 public class ScreenFrame extends JFrame{
 	
-	ScreenPanel screenPanel;
+	public ScreenPanel screenPanel;
 
 	public ScreenFrame(){
 		super();
@@ -27,4 +27,5 @@ public class ScreenFrame extends JFrame{
 		
 		pack();
 	}
+	
 }

@@ -24,7 +24,7 @@ public class GameBoy{
 	final static int EIGHT_KB_SWITCHABLE_RAM_BANK_ADDR 		= 0xA000;
 	final static int EIGHT_KB_INTERNAL_RAM_ADDR 			= 0xC000;
 	final static int ECHO_OF_EIGHT_KB_INTERNAL_RAM_ADDR		= 0xE000;
-	final static int SPRITE_ATTRIB_MEMORY_ADDR 				= 0xFEA0;
+	final static int SPRITE_ATTRIB_MEMORY_ADDR 				= 0xFE00;
 	final static int IO_PORTS_ADDR 							= 0xFF00;
 	final static int INTERNAL_RAM_ADDR 						= 0xFF80;
 	final static int INTERRUPT_TABLE_REGISTER_ADDR 			= 0xFFFF;
@@ -69,22 +69,26 @@ public class GameBoy{
 		notifyAll();
 		cpu.setState(CPUState.CPU_STATE_EXECUTING);
 	}
+	
+	public void projectRow(int row, char[] pixelsArray){
+		screenFrame.screenPanel.paintRow(row, pixelsArray);
+	}
 
 	//GET/SET
 	
-	public synchronized int getMachineCycles() {
+	public int getMachineCycles() {
 		return machineCycles;
 	}
 	
-	public synchronized void setMachineCycles(int machineCycles){
+	public void setMachineCycles(int machineCycles){
 		this.machineCycles = machineCycles;
 	}
 	
-	public synchronized int getClockCycles() {
+	public int getClockCycles() {
 		return clockCycles;
 	}
 	
-	public synchronized void setClockCycles(int clockCycles){
+	public void setClockCycles(int clockCycles){
 		this.clockCycles = clockCycles;
 		LCDControllerState prevState = lcd.getLCDState();
 		LCDControllerState newState = null;
@@ -116,7 +120,6 @@ public class GameBoy{
 			if(lcdControllerIsIdle){
 				lcd.setLCDState(newState);
 				lcdControllerIsIdle = false;
-				notifyAll();
 				lcd.run();
 			}else{
 				cpu.setState(CPUState.CPU_STATE_WAITING);

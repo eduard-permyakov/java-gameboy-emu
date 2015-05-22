@@ -99,12 +99,19 @@ public class CPU extends Thread{
 	
 	public void decodeAndExecuteOpcode(){
 		
-		if(pc == 0xF9){
-			System.out.println("PC = F9");
+		//temp to freeze the program when u hit the rom
+		if(pc == 0x100){
+			for(int i = 0; i < gameBoy.memory.length; i++){
+				if(gameBoy.memory[i] != 0x0)
+					System.out.println("ADDR: "+Integer.toHexString(i).toUpperCase()+" value: "
+							+String.format("%16s", Integer.toBinaryString(gameBoy.memory[i])).replace(' ', '0'));
+			}
+			System.out.println("freezing for now");
+			while(true){}
 		}
 		
-		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+		//System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
+		//System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
 		switch(currentOpcode){
 		

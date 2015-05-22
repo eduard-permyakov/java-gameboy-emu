@@ -14,10 +14,20 @@ enum LCDControllerState{
 public class LCDController extends Thread{
 	
 	private char y;
+	
+	private char winPosX;
+	private char winPosY;
+	
+	private char scrollPosX;
+	private char scrollPosY;
+	
+	private char[][] spriteAttsArray;
+	private char[][] spritesArray;
+	private char[] bgDataArray;
+	private char[] linePixelArray;
 
 	private GameBoy gameBoy;
-	public CyclicBarrier barrier;
-	public CountDownLatch latch;
+	private CyclicBarrier barrier;
 	
 	private LCDControllerState state;
 	
@@ -91,19 +101,45 @@ public class LCDController extends Thread{
 		this.gameBoy = gameBoy;
 		this.barrier = barrier;
 		this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
-		y = 0;
-	}
-	
-	public void run(){
 		
+		y = 0;
+		winPosX = 0;
+		winPosY = 0;
+		
+		scrollPosX = 0;
+		scrollPosY = 0;
+		
+		spriteAttsArray = new char[40][4];
+		spritesArray = new char[384][16];
+		bgDataArray = new char[1024];
+		linePixelArray = new char[160];
+	}
+	//TODO:
+	/*
+	 * Specifies the upper/left positions of the Window area. (The window is 
+	 *  an alternate background area which can be displayed above of the normal background.
+	 *  OBJs (sprites) may be still displayed above or behinf the window, just as for normal BG.)
+	 *  The window becomes visible (if enabled) when positions are set in range WX=0..166,
+ 	 *  WY=0..143. A postion of WX=7, WY=0 locates the window at upper left, it is then completly 
+ 	 *  covering normal background.
+ 	 *  
+	 * */
+	
+	//TODO: do none of this if the LCD is disabled still
+	public void run(){
+				
 		updateStatusRegister();
 		updateLYRegister();
+		updateScrollValues();
+		winPosX = gameBoy.memory[WX_REGISTER_ADDR];
+
 		
 		switch(this.state){
 		case LCD_STATE_HBLANK:
-			for(int i = 0; i < HBLANK_CYCLES; i++){}				
-			y++;
-				
+			makeLinePixelArray();
+			gameBoy.projectRow(y, linePixelArray);
+			
+			y++;	
 			if(y > 144)
 				y = 0;
 			
@@ -111,18 +147,19 @@ public class LCDController extends Thread{
 				
 			break;
 		case LCD_STATE_VBLANK:
-			for(int i = 0; i < VBLANK_CYCLES; i++){}
+			readOAMandVRAM();
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
 		case LCD_STATE_READING_OAM_ONLY:
-			for(int i = 0; i < READING_OAM_ONLY_CYCLES; i++){}
+			readOAM();
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
 		case LCD_STATE_READING_OAM_AND_VRAM:
 			for(int i = 0; i < READING_OAM_AND_VRAM_CYCLES; i++){}
 				
+			winPosY = gameBoy.memory[WY_REGISTER_ADDR];
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
@@ -130,6 +167,11 @@ public class LCDController extends Thread{
 
 		}
 		//System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+	}
+	
+	private void updateScrollValues(){
+		scrollPosX = gameBoy.memory[SCROLL_X_REGISTER_ADDR];
+		scrollPosY = gameBoy.memory[SCROLL_Y_REGISTER_ADDR];
 	}
 	
 	private void updateStatusRegister(){
@@ -187,11 +229,62 @@ public class LCDController extends Thread{
 		gameBoy.memory[LY_REGISTER_ADDR] = y;
 	}
 	
-	public synchronized void setLCDState(LCDControllerState state){
+	private void readOAM(){
+		final char baseAddressOAM = GameBoy.SPRITE_ATTRIB_MEMORY_ADDR;
+		for(int i = 0; i < 40; i++){
+			for(int j = 0; j < 4; j++){
+				spriteAttsArray[i][j] = gameBoy.memory[baseAddressOAM + 4*i + j];
+			}
+		}
+		
+	}
+	
+	private void readOAMandVRAM(){
+		
+		final char baseAddressVRAM = GameBoy.EIGHT_KB_VIDEO_RAM_ADDR;
+		for(int i = 0; i < 384; i++){
+			for(int j = 0; j < 16; j++){
+				spritesArray[i][j] = gameBoy.memory[baseAddressVRAM + 16*i + j];
+			}
+		}
+		
+		//TODO: here it is possible to select one of two maps based on register values
+		for(int i = 0; i < 1024; i++){
+			bgDataArray[i] = gameBoy.memory[0x9800 + i];
+		}
+	}
+	
+	//need to debug this here still
+	//! each tile is 4 px actually
+	private void makeLinePixelArray(){
+		//TODO: diff. tile addressing if it's BG #2
+		int bgTileBaseIndexY = (y % 8);
+		int bgTileIndexX = (scrollPosX % 8);
+		
+		for(int i = 0; i < 32; i++){
+			char[] sprite = spritesArray[bgTileBaseIndexY*32 + bgTileIndexX+i];
+			int yIndex = (y%8);
+			int xIndex = scrollPosX%8;
+			for(int j = xIndex; j < (8-xIndex); j++){
+				char bitSequenceForRow = (char)((sprite[2*yIndex] << 8) | sprite[2*yIndex+1]);
+				char color = (char)((bitSequenceForRow >> (7-j)) & 0b11);
+				if((i*8+j) < 160)
+					linePixelArray[i*8+j] = color;
+				else
+					break;
+			}
+		}
+	}
+	
+	private void performVBlank(){
+		//w/e happens during vblank
+	}
+	
+	public void setLCDState(LCDControllerState state){
 		this.state = state;
 	}
 	
-	public synchronized LCDControllerState getLCDState(){
+	public LCDControllerState getLCDState(){
 		return this.state;
 	}
 
