@@ -3,6 +3,7 @@ package emulator;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 enum LCDControllerState{
 	LCD_STATE_HBLANK,
@@ -12,7 +13,7 @@ enum LCDControllerState{
 }
 
 public class LCDController extends Thread{
-	
+		
 	private char y;
 	
 	private char winPosX;
@@ -59,8 +60,8 @@ public class LCDController extends Thread{
 	public final static char MODE_2_OAM_INTERRUPT			= 0x20; //1=Enable				[R/W]
 	public final static char LYC_EQ_LY_COINCIDEN_INTERRUPT 	= 0X40;	//1=Enable				[R/W]
 	
-	public final static char SCROLL_X_REGISTER_ADDR			= 0xFF42;
-	public final static char SCROLL_Y_REGISTER_ADDR			= 0xFF43;
+	public final static char SCROLL_Y_REGISTER_ADDR			= 0xFF42;
+	public final static char SCROLL_X_REGISTER_ADDR			= 0xFF43;
 	
 	public final static char LY_REGISTER_ADDR				= 0XFF44;
 	public final static char LYC_REGISTER_ADDR				= 0xFF45;
@@ -112,7 +113,7 @@ public class LCDController extends Thread{
 		spriteAttsArray = new char[40][4];
 		spritesArray = new char[384][16];
 		bgDataArray = new char[1024];
-		linePixelArray = new char[160];
+		linePixelArray = new char[256];
 	}
 	//TODO:
 	/*
@@ -136,9 +137,22 @@ public class LCDController extends Thread{
 		
 		switch(this.state){
 		case LCD_STATE_HBLANK:
+			
+//			long endTime = System.nanoTime();
+//			long stallTimeNano = Math.max(((CPU.NANOSECONDS_IN_SECOND/CPU.PROCESSOR_DAMPED_FREQUENCY_HZ) 
+//					- (endTime - prevTime)), 0);
+//			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
+//			
+//			try {
+//				//Thread.sleep(0);
+//				Thread.sleep(stallTimeMillis, (int)(stallTimeNano%1000000));
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+			
 			makeLinePixelArray();
 			gameBoy.projectRow(y, linePixelArray);
-			
+						
 			y++;	
 			if(y > 144)
 				y = 0;
@@ -147,7 +161,8 @@ public class LCDController extends Thread{
 				
 			break;
 		case LCD_STATE_VBLANK:
-			readOAMandVRAM();
+			winPosY = gameBoy.memory[WY_REGISTER_ADDR];
+			
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
@@ -157,16 +172,15 @@ public class LCDController extends Thread{
 				
 			break;
 		case LCD_STATE_READING_OAM_AND_VRAM:
-			for(int i = 0; i < READING_OAM_AND_VRAM_CYCLES; i++){}
+			readOAMandVRAM();
 				
-			winPosY = gameBoy.memory[WY_REGISTER_ADDR];
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
 			default:
 
 		}
-		//System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+//		System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
 	}
 	
 	private void updateScrollValues(){
@@ -250,28 +264,29 @@ public class LCDController extends Thread{
 		
 		//TODO: here it is possible to select one of two maps based on register values
 		for(int i = 0; i < 1024; i++){
+//			if(gameBoy.memory[0x9800 + i] != 0){
+//				System.out.println("sending: " + gameBoy.memory[0x9800 + i] +" to index: " + i);
+//			}
 			bgDataArray[i] = gameBoy.memory[0x9800 + i];
 		}
+		
 	}
 	
 	//need to debug this here still
-	//! each tile is 4 px actually
 	private void makeLinePixelArray(){
 		//TODO: diff. tile addressing if it's BG #2
-		int bgTileBaseIndexY = (y % 8);
-		int bgTileIndexX = (scrollPosX % 8);
+		final int bgTileBaseIndex = ((int)((scrollPosY+y)/8))*32;
+		final int yCoordinate = (scrollPosY+y)%8;
+		//System.out.println("scrY: " +scrollPosY);
 		
 		for(int i = 0; i < 32; i++){
-			char[] sprite = spritesArray[bgTileBaseIndexY*32 + bgTileIndexX+i];
-			int yIndex = (y%8);
-			int xIndex = scrollPosX%8;
-			for(int j = xIndex; j < (8-xIndex); j++){
-				char bitSequenceForRow = (char)((sprite[2*yIndex] << 8) | sprite[2*yIndex+1]);
-				char color = (char)((bitSequenceForRow >> (7-j)) & 0b11);
-				if((i*8+j) < 160)
-					linePixelArray[i*8+j] = color;
-				else
-					break;
+
+			char[] sprite = spritesArray[bgDataArray[bgTileBaseIndex+i]];
+			final char rowBitSequence = (char)((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
+
+			for(int j = 0; j < 8; j++){
+				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
+				linePixelArray[8*i+j] = color;
 			}
 		}
 	}

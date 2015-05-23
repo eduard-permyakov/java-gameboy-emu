@@ -11,11 +11,11 @@ enum CPUState{
 
 public class CPU extends Thread{
 	
-	final static int PROCESSOR_FREQUENCY_HZ = 4194304;
-	final static int NANOSECONDS_IN_SECOND = 1000000000;
+	public final static int PROCESSOR_FREQUENCY_HZ = 4194304;
+	public final static int NANOSECONDS_IN_SECOND = 1000000000;
 	
-	final static int PROCESSOR_DAMPING_FACTOR = 20;
-	final static int PROCESSOR_DAMPED_FREQUENCY_HZ = 
+	public final static int PROCESSOR_DAMPING_FACTOR = 1;
+	public final static int PROCESSOR_DAMPED_FREQUENCY_HZ = 
 			(int)(PROCESSOR_FREQUENCY_HZ/PROCESSOR_DAMPING_FACTOR);
 	
 	private GameBoy gameBoy;
@@ -70,7 +70,7 @@ public class CPU extends Thread{
 				}
 
 			}
-			//System.out.println("CPU State: "+this.state);
+//			System.out.println("CPU State: "+this.state);
 			
 			long endTime = System.nanoTime();
 			long stallTimeNano = Math.max(((NANOSECONDS_IN_SECOND/PROCESSOR_DAMPED_FREQUENCY_HZ) 
@@ -78,7 +78,8 @@ public class CPU extends Thread{
 			long stallTimeMillis = TimeUnit.MILLISECONDS.convert(stallTimeNano, TimeUnit.NANOSECONDS);
 			
 			try {
-				Thread.sleep(0);
+				TimeUnit.MILLISECONDS.sleep(stallTimeMillis);
+				TimeUnit.NANOSECONDS.sleep(stallTimeNano%1000000);
 				//Thread.sleep(stallTimeMillis, (int)(stallTimeMillis%1000000));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -99,16 +100,13 @@ public class CPU extends Thread{
 	
 	public void decodeAndExecuteOpcode(){
 		
-		//temp to freeze the program when u hit the rom
-		if(pc == 0x100){
-			for(int i = 0; i < gameBoy.memory.length; i++){
-				if(gameBoy.memory[i] != 0x0)
-					System.out.println("ADDR: "+Integer.toHexString(i).toUpperCase()+" value: "
-							+String.format("%16s", Integer.toBinaryString(gameBoy.memory[i])).replace(' ', '0'));
-			}
-			System.out.println("freezing for now");
-			while(true){}
-		}
+//		if(pc == 0x100){
+//			for(int i = 0; i < gameBoy.memory.length; i++){
+//				if(gameBoy.memory[i] != 0x0)
+//					System.out.println("ADDR: "+Integer.toHexString(i).toUpperCase()+" value: "
+//							+String.format("%16s", Integer.toBinaryString(gameBoy.memory[i])).replace(' ', '0'));
+//			}
+//		}
 		
 		//System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 		//System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());

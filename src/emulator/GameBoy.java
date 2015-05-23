@@ -3,7 +3,7 @@ package emulator;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-public class GameBoy{
+public class GameBoy extends Thread{
 	
 	public boolean lcdControllerIsIdle;
 	
@@ -16,7 +16,7 @@ public class GameBoy{
 	
 	private ScreenFrame screenFrame;
 	
-	public char[] memory;
+	public volatile char[] memory;
 	
 	final static int SIXTEEN_KB_ROM_BANK_0_ADDR 			= 0x0000;
 	final static int SIXTEEN_KB_SWITCHABLE_ROM_BANK_ADDR 	= 0x4000;
