@@ -1,1 +1,1 @@
-# java-gameboy-emu
+# Java Game Boy Emulator
