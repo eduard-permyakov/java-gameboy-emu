@@ -94,7 +94,7 @@ public class CPU extends Thread{
 	
 	public void fetchNextOpcode(){
 		
-		currentOpcode = gameBoy.memory[pc];
+		currentOpcode = gameBoy.memory.readByte(pc);
 		
 	}
 	
@@ -182,7 +182,7 @@ public class CPU extends Thread{
 		/****************************/
 		
 		case 0x06:{
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_B] = immediate;
 			
@@ -193,7 +193,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x0E:{
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_C] = immediate;
 			
@@ -205,7 +205,7 @@ public class CPU extends Thread{
 		
 		case 0x16: {
 			
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_D] = immediate;
 			
@@ -217,7 +217,7 @@ public class CPU extends Thread{
 		
 		case 0x1E: {
 			
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_E] = immediate;
 			
@@ -229,7 +229,7 @@ public class CPU extends Thread{
 		
 		case 0x26: {
 			
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_H] = immediate;
 			
@@ -241,7 +241,7 @@ public class CPU extends Thread{
 		
 		case 0x2E: {
 			
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_L] = immediate;
 			
@@ -315,7 +315,7 @@ public class CPU extends Thread{
 		
 		case 0x7E: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_A] = gameBoy.memory[address];
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -370,7 +370,7 @@ public class CPU extends Thread{
 		
 		case 0x46: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_B] = gameBoy.memory[address];
+			registers[INDEX_B] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -434,7 +434,7 @@ public class CPU extends Thread{
 		
 		case 0x4E: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_C] = gameBoy.memory[address];
+			registers[INDEX_C] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -498,7 +498,7 @@ public class CPU extends Thread{
 		
 		case 0x56: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_D] = gameBoy.memory[address];
+			registers[INDEX_D] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -562,7 +562,7 @@ public class CPU extends Thread{
 		
 		case 0x5E: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_E] = gameBoy.memory[address];
+			registers[INDEX_E] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -626,7 +626,7 @@ public class CPU extends Thread{
 		
 		case 0x66: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_H] = gameBoy.memory[address];
+			registers[INDEX_H] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -691,7 +691,7 @@ public class CPU extends Thread{
 		
 		case 0x6E: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_L] = gameBoy.memory[address];
+			registers[INDEX_L] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -701,7 +701,7 @@ public class CPU extends Thread{
 		
 		case 0x70: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_B]);
+			gameBoy.memory.writeByte(address, registers[INDEX_B]);
 			
 			M += 2;
 			T += 8;
@@ -711,7 +711,7 @@ public class CPU extends Thread{
 		
 		case 0x71: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_C]);
+			gameBoy.memory.writeByte(address, registers[INDEX_C]);
 			
 			M += 2;
 			T += 8;
@@ -721,7 +721,7 @@ public class CPU extends Thread{
 		
 		case 0x72: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_D]);
+			gameBoy.memory.writeByte(address, registers[INDEX_D]);
 			
 			M += 2;
 			T += 8;
@@ -731,7 +731,7 @@ public class CPU extends Thread{
 		
 		case 0x73: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_E]);
+			gameBoy.memory.writeByte(address, registers[INDEX_E]);
 			
 			M += 2;
 			T += 8;
@@ -741,7 +741,7 @@ public class CPU extends Thread{
 		
 		case 0x74: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_H]);
+			gameBoy.memory.writeByte(address, registers[INDEX_H]);
 			
 			M += 2;
 			T += 8;
@@ -751,7 +751,7 @@ public class CPU extends Thread{
 		
 		case 0x75: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_L]);
+			gameBoy.memory.writeByte(address, registers[INDEX_L]);
 			
 			M += 2;
 			T += 8;
@@ -761,7 +761,7 @@ public class CPU extends Thread{
 		
 		case 0x36: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, gameBoy.memory[++pc]);
+			gameBoy.memory.writeByte(address, gameBoy.memory.readByte(++pc));
 			
 			M += 3;
 			T += 12;
@@ -771,7 +771,7 @@ public class CPU extends Thread{
 		
 		case 0x0A: {
 			char address = (char)((registers[INDEX_B] << 8) | registers[INDEX_C]);
-			registers[INDEX_A] = gameBoy.memory[address];
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -781,7 +781,7 @@ public class CPU extends Thread{
 		
 		case 0x1A: {
 			char address = (char)((registers[INDEX_D] << 8) | registers[INDEX_E]);
-			registers[INDEX_A] = gameBoy.memory[address];
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -790,8 +790,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0xFA: {
-			char address = (char)(gameBoy.memory[++pc] | (gameBoy.memory[++pc] << 8));
-			registers[INDEX_A] = gameBoy.memory[address];
+			char address = (char)(gameBoy.memory.readByte(++pc) | (gameBoy.memory.readByte(++pc) << 8));
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			M += 4;
 			T += 16;
@@ -800,7 +800,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x3E: {
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			registers[INDEX_A] = immediate;
 			
 			M += 2;
@@ -865,7 +865,7 @@ public class CPU extends Thread{
 		
 		case 0x02: {
 			char address = (char)((registers[INDEX_B] << 8) | registers[INDEX_C]);
-			writeByteToMemory(address, registers[INDEX_A]);
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -875,7 +875,7 @@ public class CPU extends Thread{
 		
 		case 0x12: {
 			char address = (char)((registers[INDEX_E] << 8) | registers[INDEX_E]);
-			writeByteToMemory(address, registers[INDEX_A]);
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -885,7 +885,7 @@ public class CPU extends Thread{
 		
 		case 0x77: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_A]);
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -894,8 +894,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0xEA: {
-			char address = (char)(gameBoy.memory[++pc] | (gameBoy.memory[++pc] << 8));
-			writeByteToMemory(address, registers[INDEX_A]);
+			char address = (char)(gameBoy.memory.readByte(++pc) | (gameBoy.memory.readByte(++pc) << 8));
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			M += 4;
 			T += 16;
@@ -904,8 +904,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0xF2: {
-			char address = (gameBoy.memory[0xFF00 + registers[INDEX_C]]);
-			registers[INDEX_A] = gameBoy.memory[address];
+			char address = (gameBoy.memory.readByte(0xFF00 + registers[INDEX_C]));
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			M += 2;
 			T += 8;
@@ -914,8 +914,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0xE2: {
-			char address = (gameBoy.memory[0xFF00 + registers[INDEX_C]]);
-			writeByteToMemory(address, registers[INDEX_A]);
+			char address = (gameBoy.memory.readByte(0xFF00 + registers[INDEX_C]));
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			M += 2;
 			T += 8;
@@ -925,7 +925,7 @@ public class CPU extends Thread{
 		
 		case 0x3A: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			registers[INDEX_A] = gameBoy.memory[address];
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			address--;
 			registers[INDEX_H] = (char)(address >> 8);
@@ -939,7 +939,7 @@ public class CPU extends Thread{
 		
 		case 0x32: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_A]);
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			address--;
 			registers[INDEX_H] = (char)(address >> 8);
@@ -953,7 +953,7 @@ public class CPU extends Thread{
 		
 		case 0x2A: {
 			char address = (char)((registers[INDEX_H] << 8) & registers[INDEX_L]);
-			registers[INDEX_A] = gameBoy.memory[address];
+			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			address++;
 			registers[INDEX_H] = (char)(address >> 8);
@@ -967,7 +967,7 @@ public class CPU extends Thread{
 		
 		case 0x22: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			writeByteToMemory(address, registers[INDEX_A]);
+			gameBoy.memory.writeByte(address, registers[INDEX_A]);
 			
 			address++;
 			registers[INDEX_H] = (char)(address >> 8);
@@ -980,9 +980,9 @@ public class CPU extends Thread{
 		}
 		
 		case 0xE0: {
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
-			gameBoy.memory[0xFF00 + immediate] = registers[INDEX_A];
+			gameBoy.memory.writeByte(0xFF00 + immediate, registers[INDEX_A]);
 			
 			M += 3;
 			T += 12;
@@ -991,9 +991,9 @@ public class CPU extends Thread{
 		}
 		
 		case 0xF0: {
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
-			registers[INDEX_A] = gameBoy.memory[0xFF00 + immediate];
+			registers[INDEX_A] = gameBoy.memory.readByte(0xFF00 + immediate);
 						
 			M += 3;
 			T += 12;
@@ -1006,8 +1006,8 @@ public class CPU extends Thread{
 		/****************************/
 		
 		case 0x01: {
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_B] = immediateMS;
 			registers[INDEX_C] = immediateLS;
@@ -1019,8 +1019,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0x11: {
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_D] = immediateMS;
 			registers[INDEX_E] = immediateLS;
@@ -1032,8 +1032,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0x21: {
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 			
 			registers[INDEX_H] = immediateMS;
 			registers[INDEX_L] = immediateLS;
@@ -1045,8 +1045,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0x31: {
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 			
 			sp = (char)((immediateMS << 8) | immediateLS);
 			
@@ -1067,7 +1067,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0xF8: {
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			char address = (char)(sp + immediate);
 			
 			registers[INDEX_H] = (char)(address << 8);
@@ -1097,13 +1097,13 @@ public class CPU extends Thread{
 		}
 		
 		case 0x08: {
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 			
 			char address = (char)((immediateMS << 8) | immediateLS);
 			
-			gameBoy.memory[address] = (char)(sp & 0xFF);
-			gameBoy.memory[address+1] = (char)(sp >> 8);
+			gameBoy.memory.writeByte(address , (char)(sp & 0xFF));
+			gameBoy.memory.writeByte(address+1, (char)(sp >> 8));
 			
 			M += 5;
 			T += 20;
@@ -1114,9 +1114,9 @@ public class CPU extends Thread{
 		case 0xF5: {
 			
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_F];
+			gameBoy.memory.writeByte(sp, registers[INDEX_F]);
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_A];
+			gameBoy.memory.writeByte(sp, registers[INDEX_A]);
 			
 			M += 4;
 			T += 16;
@@ -1127,9 +1127,9 @@ public class CPU extends Thread{
 		case 0xC5: {
 			
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_C];
+			gameBoy.memory.writeByte(sp, registers[INDEX_C]);
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_B];
+			gameBoy.memory.writeByte(sp, registers[INDEX_B]);
 			
 			M += 4;
 			T += 16;
@@ -1140,9 +1140,9 @@ public class CPU extends Thread{
 		case 0xD5: {
 			
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_E];
+			gameBoy.memory.writeByte(sp, registers[INDEX_E]);
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_D];
+			gameBoy.memory.writeByte(sp, registers[INDEX_D]);
 			
 			M += 4;
 			T += 16;
@@ -1153,9 +1153,9 @@ public class CPU extends Thread{
 		case 0xE5: {
 			
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_L];
+			gameBoy.memory.writeByte(sp, registers[INDEX_L]);
 			sp --;
-			gameBoy.memory[sp] = registers[INDEX_H];
+			gameBoy.memory.writeByte(sp, registers[INDEX_H]);
 			
 			M += 4;
 			T += 16;
@@ -1165,9 +1165,9 @@ public class CPU extends Thread{
 		
 		case 0xF1: {
 			
-			registers[INDEX_F] = gameBoy.memory[sp];
+			registers[INDEX_F] = gameBoy.memory.readByte(sp);
 			sp ++;
-			registers[INDEX_A] = gameBoy.memory[sp];
+			registers[INDEX_A] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1178,9 +1178,9 @@ public class CPU extends Thread{
 		
 		case 0xC1: {
 			
-			registers[INDEX_B] = gameBoy.memory[sp];
+			registers[INDEX_B] = gameBoy.memory.readByte(sp);
 			sp ++;
-			registers[INDEX_C] = gameBoy.memory[sp];
+			registers[INDEX_C] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1191,9 +1191,9 @@ public class CPU extends Thread{
 		
 		case 0xD1: {
 			
-			registers[INDEX_E] = gameBoy.memory[sp];
+			registers[INDEX_E] = gameBoy.memory.readByte(sp);
 			sp ++;
-			registers[INDEX_D] = gameBoy.memory[sp];
+			registers[INDEX_D] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1204,9 +1204,9 @@ public class CPU extends Thread{
 		
 		case 0xE1: {
 			
-			registers[INDEX_L] = gameBoy.memory[sp];
+			registers[INDEX_L] = gameBoy.memory.readByte(sp);
 			sp ++;
-			registers[INDEX_H] = gameBoy.memory[sp];
+			registers[INDEX_H] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1445,7 +1445,7 @@ public class CPU extends Thread{
 		
 		case 0x86: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			char result = (char)(((registers[INDEX_A] + gameBoy.memory[address])) &0xFF);
+			char result = (char)(((registers[INDEX_A] + gameBoy.memory.readByte(address))) &0xFF);
 			
 			//set z flag
 			if(result == 0)
@@ -1457,7 +1457,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if((registers[INDEX_A] &0xF) + (gameBoy.memory[address] &0xF) > 0xF)
+			if((registers[INDEX_A] &0xF) + (gameBoy.memory.readByte(address)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1477,7 +1477,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0xC6: {
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			int result = ((registers[INDEX_A] + immediate));
 			
 			//set z flag
@@ -1735,7 +1735,7 @@ public class CPU extends Thread{
 		
 		case 0x8E: {
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]); 
-			int result = (registers[INDEX_A] + gameBoy.memory[address] + ((registers[INDEX_F] & ZERO_BIT) >> 4));
+			int result = (registers[INDEX_A] + gameBoy.memory.readByte(address) + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
 			if((result&0xFF) == 0)
@@ -1747,7 +1747,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] &= ~OP_BIT;
 			
 			//set h flag
-			if(((registers[INDEX_A] &0xF) + (gameBoy.memory[address] &0xF) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF)
+			if(((registers[INDEX_A] &0xF) + (gameBoy.memory.readByte(address) + ((registers[INDEX_F] & ZERO_BIT) >> 4)) > 0xF))
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -1767,7 +1767,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0xCE: {
-			char immediate = gameBoy.memory[++pc]; 
+			char immediate = gameBoy.memory.readByte(++pc); 
 			int result = (registers[INDEX_A] + immediate + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
@@ -1804,8 +1804,8 @@ public class CPU extends Thread{
 		
 		//just implement what I need atm
 		case 0xC3: {
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 			
 			char address = (char)((immediateMS << 8) | immediateLS);
 			pc = address;
@@ -1858,7 +1858,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x20: {
-			byte signedImmediate = (byte)(gameBoy.memory[++pc]);
+			byte signedImmediate = (byte)(gameBoy.memory.readByte(++pc));
 			
 			//check not zero flag
 			if(((registers[INDEX_F] & ZERO_BIT) >> 4) == 0){
@@ -1897,13 +1897,13 @@ public class CPU extends Thread{
 		
 		case 0xCD: {
 			
-			char immediateLS = gameBoy.memory[++pc];
-			char immediateMS = gameBoy.memory[++pc];
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
 						
 			sp --;
-			gameBoy.memory[sp] = (char)(pc+1 &0xFF);
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) );
 			sp--;
-			gameBoy.memory[sp] = (char)(pc+1 >> 8);
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) );
 			
 			pc = (char)((immediateMS << 8) | immediateLS);
 
@@ -1957,9 +1957,9 @@ public class CPU extends Thread{
 		
 		case 0xC9: {
 			
-			char retAddMS = gameBoy.memory[sp];
+			char retAddMS = gameBoy.memory.readByte(sp);
 			sp ++;
-			char retAddLS = gameBoy.memory[sp];
+			char retAddLS = gameBoy.memory.readByte(sp);
 			pc ++;
 			
 			pc = (char)((retAddMS << 8) | retAddLS);
@@ -1979,7 +1979,7 @@ public class CPU extends Thread{
 		
 		case 0xFE: {
 			
-			char immediate = gameBoy.memory[++pc];
+			char immediate = gameBoy.memory.readByte(++pc);
 			
 			char result = (char)(registers[INDEX_A] - immediate);
 			
@@ -2045,7 +2045,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x28: {
-			byte signedImmediate = (byte)(gameBoy.memory[++pc]);
+			byte signedImmediate = (byte)(gameBoy.memory.readByte(++pc));
 			
 			//check not zero flag
 			if(((registers[INDEX_F] & ZERO_BIT) >> 4) != 0){
@@ -2086,7 +2086,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x18: {
-			byte signedImmediate = (byte)gameBoy.memory[++pc];
+			byte signedImmediate = (byte)gameBoy.memory.readByte(++pc);
 			pc = (char)(pc +1 + signedImmediate); //TODO: hyper sketch +1
 			
 			//these vals are not agreed upon?
@@ -2222,7 +2222,7 @@ public class CPU extends Thread{
 		case 0xBE: {
 			
 			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
-			char value = gameBoy.memory[address];
+			char value = gameBoy.memory.readByte(address);
 			
 			char result = (char)(registers[INDEX_A] - value);
 			
@@ -2262,20 +2262,20 @@ public class CPU extends Thread{
 
 	}
 	
-	void writeByteToMemory(char address, char data){
-		gameBoy.memory[address] = data;
-		
-		//echo the 8kb internal RAM
-		if(address >= 0xC000 && address <  0xE000){
-			char echoAddress = (char)(address + 0x2000);
-			gameBoy.memory[echoAddress] = data; 
-		}
-		
-		if(address == LCDController.DMA_REGISTER_ADDR){
-			gameBoy.DMATransfer();
-		}
-		
-	}
+//	void writeByteToMemory(char address, char data){
+//		gameBoy.memory[address] = data;
+//		
+//		//echo the 8kb internal RAM
+//		if(address >= 0xC000 && address <  0xE000){
+//			char echoAddress = (char)(address + 0x2000);
+//			gameBoy.memory[echoAddress] = data; 
+//		}
+//		
+//		if(address == LCDController.DMA_REGISTER_ADDR){
+//			gameBoy.DMATransfer();
+//		}
+//		
+//	}
 	
 	private void init() {
 		

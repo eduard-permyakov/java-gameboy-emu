@@ -8,10 +8,20 @@ import javax.swing.JPanel;
 
 public class ScreenPanel extends JPanel{
 	
-	private Color color1;
-	private Color color2;
-	private Color color3;
-	private Color color4;
+	private Color backgroundColor1;
+	private Color backgroundColor2;
+	private Color backgroundColor3;
+	private Color backgroundColor4;
+	
+	private Color obj0Color1;
+	private Color obj0Color2;
+	private Color obj0Color3;
+	private Color obj0Color4;
+	
+	private Color obj1Color1;
+	private Color obj1Color2;
+	private Color obj1Color3;
+	private Color obj1Color4;
 	
 	private char[] pixelsArray;
 	private int currentRow;
@@ -29,11 +39,7 @@ public class ScreenPanel extends JPanel{
 	public ScreenPanel() {
 		super();
 		screenDimension = new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT);
-		
-		color1 = Color.white;
-		color2 = Color.lightGray;
-		color3 = Color.darkGray;
-		color4 = Color.black;
+		setBackground(Color.black);
 		
 		pixelsArray = new char[160];
 		
@@ -46,16 +52,16 @@ public class ScreenPanel extends JPanel{
 		for(int i = 0; i < 160; i++){
 			switch(pixelsArray[i]){
 			case 0:
-				g.setColor(color1);
+				g.setColor(backgroundColor1);
 				break;
 			case 1:
-				g.setColor(color2);
+				g.setColor(backgroundColor2);
 				break;
 			case 2:
-				g.setColor(color3);
+				g.setColor(backgroundColor3);
 				break;
 			case 3:
-				g.setColor(color4);
+				g.setColor(backgroundColor4);
 				break;
 				default:
 					g.setColor(Color.red);
@@ -74,6 +80,33 @@ public class ScreenPanel extends JPanel{
 		this.pixelsArray = pixelsArray;
 		
 		this.paintImmediately(0, row*PIXEL_SCALE_FACTOR, SCREEN_WIDTH, PIXEL_SCALE_FACTOR);
+	}
+	
+	public void setBackgroundAndWindowColors(Color c1, Color c2, Color c3, Color c4){
+		
+		backgroundColor1 = c1;
+		backgroundColor2 = c2;
+		backgroundColor3 = c3;
+		backgroundColor4 = c4;
+
+	}
+	
+	public void setObject0Colors(Color c1, Color c2, Color c3, Color c4){
+		
+		obj0Color1 = c1;
+		obj0Color2 = c2;
+		obj0Color3 = c3;
+		obj0Color4 = c4;
+		
+	}
+	
+	public void setObject1Colors(Color c1, Color c2, Color c3, Color c4){
+		
+		obj1Color1 = c1;
+		obj1Color2 = c2;
+		obj1Color3 = c3;
+		obj1Color4 = c4;
+		
 	}
 	
 }

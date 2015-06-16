@@ -1,7 +1,9 @@
 package emulator;
 
+import java.awt.Color;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+import emulator.LCDController;
 
 public class GameBoy extends Thread{
 	
@@ -11,23 +13,9 @@ public class GameBoy extends Thread{
 	private int clockCycles;
 	
 	private CPU cpu;
-	
 	private LCDController lcd;
-	
 	private ScreenFrame screenFrame;
-	
-	public volatile char[] memory;
-	
-	final static int SIXTEEN_KB_ROM_BANK_0_ADDR 			= 0x0000;
-	final static int SIXTEEN_KB_SWITCHABLE_ROM_BANK_ADDR 	= 0x4000;
-	final static int EIGHT_KB_VIDEO_RAM_ADDR 				= 0x8000;
-	final static int EIGHT_KB_SWITCHABLE_RAM_BANK_ADDR 		= 0xA000;
-	final static int EIGHT_KB_INTERNAL_RAM_ADDR 			= 0xC000;
-	final static int ECHO_OF_EIGHT_KB_INTERNAL_RAM_ADDR		= 0xE000;
-	final static int SPRITE_ATTRIB_MEMORY_ADDR 				= 0xFE00;
-	final static int IO_PORTS_ADDR 							= 0xFF00;
-	final static int INTERNAL_RAM_ADDR 						= 0xFF80;
-	final static int INTERRUPT_TABLE_REGISTER_ADDR 			= 0xFFFF;
+	public Memory memory;
 		
 	public GameBoy() {
 		init();
@@ -37,7 +25,7 @@ public class GameBoy extends Thread{
 		
 	    final CyclicBarrier barrier = new CyclicBarrier(1);
 		
-		memory = new char[65536];
+		memory = new Memory(this);
 		cpu = new CPU(this, barrier);
 		lcd = new LCDController(this, barrier);
 		screenFrame = new ScreenFrame();
@@ -56,13 +44,13 @@ public class GameBoy extends Thread{
 	    
 	}
 	
-	public void DMATransfer() {
-		char sourceAddress = (char)(((memory[LCDController.DMA_REGISTER_ADDR] / 0x100) << 8) | 0x0);
-		char destinationAddress = 0xFE00;
-		for(int i = 0; i <= 0x9F; i++){
-			memory[destinationAddress + i] = memory[sourceAddress + i];
-		}
-	}
+//	public void DMATransfer() {
+//		char sourceAddress = (char)(((memory[LCDController.DMA_REGISTER_ADDR] / 0x100) << 8) | 0x0);
+//		char destinationAddress = 0xFE00;
+//		for(int i = 0; i <= 0x9F; i++){
+//			memory[destinationAddress + i] = memory[sourceAddress + i];
+//		}
+//	}
 	
 	public synchronized void LCDControllerDidNotifyOfStateCompletion(){
 		lcdControllerIsIdle = true;
@@ -72,6 +60,23 @@ public class GameBoy extends Thread{
 	
 	public void projectRow(int row, char[] pixelsArray){
 		screenFrame.screenPanel.paintRow(row, pixelsArray);
+	}
+	
+
+	public void setColorPalette(PaletteType type, Color[] colors){
+		switch(type){
+		case PaletteTypeBackground:
+			screenFrame.screenPanel.setBackgroundAndWindowColors(colors[0], colors[1], colors[2], colors[3]);
+			break;
+		case PaletteTypeObject0:
+			screenFrame.screenPanel.setObject0Colors(colors[0], colors[1], colors[2], colors[3]);
+			break;
+		case PaletteTypeObject1:
+			screenFrame.screenPanel.setObject1Colors(colors[0], colors[1], colors[2], colors[3]);
+			break;
+			default:
+				break;
+		}
 	}
 
 	//GET/SET

@@ -12,6 +12,15 @@ enum LCDControllerState{
 	LCD_STATE_READING_OAM_AND_VRAM
 }
 
+enum PaletteType{
+	PaletteTypeBackground(0),
+	PaletteTypeObject0(1),
+	PaletteTypeObject1(2);
+	
+	private PaletteType(int n) {value = n;}
+	private final int value;
+}
+
 public class LCDController extends Thread{
 		
 	private char y;
@@ -26,6 +35,7 @@ public class LCDController extends Thread{
 	private char[][] spritesArray;
 	private char[] bgDataArray;
 	private char[] linePixelArray;
+	private char[] linePixelTypeArray;
 
 	private GameBoy gameBoy;
 	private CyclicBarrier barrier;
@@ -71,6 +81,8 @@ public class LCDController extends Thread{
 	
 	//background palette data
 	public final static char BGP_REGISTER_ADDR				= 0xFF47;
+	public final static char OBJ0P_REGISTER_ADDR 			= 0xFF48;
+	public final static char OBJ1P_REGISTER_ADDR 			= 0xFF49;
 	
 	public final static char COLOR_NUM_0_BITS				= 0x03;
 	public final static char COLOR_NUM_1_BITS				= 0x0C;
@@ -114,6 +126,7 @@ public class LCDController extends Thread{
 		spritesArray = new char[384][16];
 		bgDataArray = new char[1024];
 		linePixelArray = new char[256];
+		linePixelTypeArray = new char[256];
 	}
 	//TODO:
 	/*
@@ -132,7 +145,7 @@ public class LCDController extends Thread{
 		updateStatusRegister();
 		updateLYRegister();
 		updateScrollValues();
-		winPosX = gameBoy.memory[WX_REGISTER_ADDR];
+		winPosX = gameBoy.memory.readByte(WX_REGISTER_ADDR);
 
 		
 		switch(this.state){
@@ -161,7 +174,7 @@ public class LCDController extends Thread{
 				
 			break;
 		case LCD_STATE_VBLANK:
-			winPosY = gameBoy.memory[WY_REGISTER_ADDR];
+			winPosY = gameBoy.memory.readByte(WY_REGISTER_ADDR);
 			
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
@@ -184,40 +197,40 @@ public class LCDController extends Thread{
 	}
 	
 	private void updateScrollValues(){
-		scrollPosX = gameBoy.memory[SCROLL_X_REGISTER_ADDR];
-		scrollPosY = gameBoy.memory[SCROLL_Y_REGISTER_ADDR];
+		scrollPosX = gameBoy.memory.readByte(SCROLL_X_REGISTER_ADDR);
+		scrollPosY = gameBoy.memory.readByte(SCROLL_Y_REGISTER_ADDR);
 	}
 	
 	private void updateStatusRegister(){
 		//LCD status register
 		//TODO: figure out the interrupts
-		if(gameBoy.memory[LYC_REGISTER_ADDR] == gameBoy.memory[LY_REGISTER_ADDR]){
-			gameBoy.memory[LCD_ADDR] |= LYC_EQ_LY_COINCIDEN_INTERRUPT;//if i-enabled
-			gameBoy.memory[LCD_ADDR] |= COINCIDENCE_FLAG_BIT;
+		if(gameBoy.memory.readByte(LYC_REGISTER_ADDR) == gameBoy.memory.readByte(LY_REGISTER_ADDR)){
+			gameBoy.memory.setMask(LCD_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, true);
+			gameBoy.memory.setMask(LCD_ADDR, COINCIDENCE_FLAG_BIT, true);
 		}else{
-			gameBoy.memory[LCD_ADDR] &= ~LYC_EQ_LY_COINCIDEN_INTERRUPT;//if i-enabled
-			gameBoy.memory[LCD_ADDR] &= ~COINCIDENCE_FLAG_BIT;
+			gameBoy.memory.setMask(LCD_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, false);
+			gameBoy.memory.setMask(LCD_ADDR, COINCIDENCE_FLAG_BIT, false);
 		}
 		
 		//hblank
 		if(this.state == LCDControllerState.LCD_STATE_HBLANK){
-			gameBoy.memory[LCD_ADDR] |= MODE_0_H_BLANK_INTERRUPT_BIT;//if i-enabled
+			gameBoy.memory.setMask(LCD_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, true);
 		}else{
-			gameBoy.memory[LCD_ADDR] &= ~MODE_0_H_BLANK_INTERRUPT_BIT;//if i-enabled
+			gameBoy.memory.setMask(LCD_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, false);
 		}
 		
 		//vblank
 		if(this.state == LCDControllerState.LCD_STATE_VBLANK){
-			gameBoy.memory[LCD_ADDR] |= MODE_1_V_BLANK_INTERRUPT_BIT;//if i-enabled
+			gameBoy.memory.writeByte(LCD_ADDR, (char)(gameBoy.memory.readByte(LCD_ADDR) | MODE_1_V_BLANK_INTERRUPT_BIT));
 		}else{
-			gameBoy.memory[LCD_ADDR] &= ~MODE_1_V_BLANK_INTERRUPT_BIT;//if i-enabled
+			gameBoy.memory.writeByte(LCD_ADDR, (char)(gameBoy.memory.readByte(LCD_ADDR) & ~MODE_1_V_BLANK_INTERRUPT_BIT));
 		}
 		
 		//oam
 		if(this.state == LCDControllerState.LCD_STATE_READING_OAM_ONLY){
-			gameBoy.memory[LCD_ADDR] |= MODE_2_OAM_INTERRUPT;//if i-enabled
+			gameBoy.memory.setMask(LCD_ADDR, MODE_2_OAM_INTERRUPT, true);
 		}else{
-			gameBoy.memory[LCD_ADDR] &= MODE_2_OAM_INTERRUPT;//if i-enabled
+			gameBoy.memory.setMask(LCD_ADDR, MODE_2_OAM_INTERRUPT, false);;//if i-enabled
 		}
 		
 		//mode flag
@@ -235,19 +248,19 @@ public class LCDController extends Thread{
 			default:
 				return;
 		}
-		gameBoy.memory[LCD_ADDR] &= 0b00;
-		gameBoy.memory[LCD_ADDR] |= modeFlag;
+		gameBoy.memory.setMask(LCD_ADDR, (char)0b11, false);
+		gameBoy.memory.setMask(LCD_ADDR, modeFlag, true);
 	}
 	
 	private void updateLYRegister() {
-		gameBoy.memory[LY_REGISTER_ADDR] = y;
+		gameBoy.memory.writeByte(LY_REGISTER_ADDR, y);
 	}
 	
 	private void readOAM(){
-		final char baseAddressOAM = GameBoy.SPRITE_ATTRIB_MEMORY_ADDR;
+		final char baseAddressOAM = Memory.SPRITE_ATTRIB_MEMORY_ADDR;
 		for(int i = 0; i < 40; i++){
 			for(int j = 0; j < 4; j++){
-				spriteAttsArray[i][j] = gameBoy.memory[baseAddressOAM + 4*i + j];
+				spriteAttsArray[i][j] = gameBoy.memory.readByte(baseAddressOAM + 4*i + j);
 			}
 		}
 		
@@ -255,10 +268,10 @@ public class LCDController extends Thread{
 	
 	private void readOAMandVRAM(){
 		
-		final char baseAddressVRAM = GameBoy.EIGHT_KB_VIDEO_RAM_ADDR;
+		final char baseAddressVRAM = Memory.EIGHT_KB_VIDEO_RAM_ADDR;
 		for(int i = 0; i < 384; i++){
 			for(int j = 0; j < 16; j++){
-				spritesArray[i][j] = gameBoy.memory[baseAddressVRAM + 16*i + j];
+				spritesArray[i][j] = gameBoy.memory.readByte(baseAddressVRAM + 16*i + j);
 			}
 		}
 		
@@ -267,12 +280,18 @@ public class LCDController extends Thread{
 //			if(gameBoy.memory[0x9800 + i] != 0){
 //				System.out.println("sending: " + gameBoy.memory[0x9800 + i] +" to index: " + i);
 //			}
-			bgDataArray[i] = gameBoy.memory[0x9800 + i];
+			bgDataArray[i] = gameBoy.memory.readByte(0x9800 + i);
 		}
 		
 	}
 	
-	//need to debug this here still
+	/*
+	 * 	As it was said before, there are two Tile Pattern
+ 		Tables at $8000-8FFF and at $8800-97FF
+ 		(use this fact for determining the PixelType)
+	 * */
+	
+	//bugged
 	private void makeLinePixelArray(){
 		//TODO: diff. tile addressing if it's BG #2
 		final int bgTileBaseIndex = ((int)((scrollPosY+y)/8))*32;
@@ -282,10 +301,14 @@ public class LCDController extends Thread{
 		for(int i = 0; i < 32; i++){
 
 			char[] sprite = spritesArray[bgDataArray[bgTileBaseIndex+i]];
-			final char rowBitSequence = (char)((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
+			int rowBitSequence = ((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
+			
+			if(rowBitSequence != 0){
+				String.format("%16s", Integer.toBinaryString(rowBitSequence)).replace(' ', '0');
+			}
 
 			for(int j = 0; j < 8; j++){
-				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
+				final char color = (char)((rowBitSequence >> (15-j)) & 0b11);
 				linePixelArray[8*i+j] = color;
 			}
 		}
