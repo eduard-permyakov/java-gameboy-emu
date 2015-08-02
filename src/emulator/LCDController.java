@@ -166,9 +166,6 @@ public class LCDController extends Thread{
 			makeLinePixelArray();
 			gameBoy.projectRow(y, linePixelArray);
 						
-			y++;	
-			if(y > 144)
-				y = 0;
 			
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
@@ -193,6 +190,10 @@ public class LCDController extends Thread{
 			default:
 
 		}
+		
+		y++;	
+		if(y > 153)
+			y = 0;
 //		System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
 	}
 	
@@ -253,6 +254,7 @@ public class LCDController extends Thread{
 	}
 	
 	private void updateLYRegister() {
+//		System.out.println(Integer.toString(y));
 		gameBoy.memory.writeByte(LY_REGISTER_ADDR, y);
 	}
 	

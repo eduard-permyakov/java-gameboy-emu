@@ -51,7 +51,7 @@ public class CPU extends Thread{
 	public CPU(GameBoy gameBoy, CyclicBarrier barrier) {
 		this.gameBoy = gameBoy;
 		this.barrier = barrier;
-		init();
+//		init();
 	}
 	
 	public void run(){
@@ -108,8 +108,13 @@ public class CPU extends Thread{
 //			}
 //		}
 		
-		//System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-		//System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+//		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
+//		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+		
+		if(pc == 0x2B2){
+			System.out.println("AF: " + Integer.toHexString(registers[INDEX_A]).toUpperCase() 
+					+ Integer.toHexString(registers[INDEX_F]).toUpperCase());
+		}
 		
 		switch(currentOpcode){
 		
@@ -2277,56 +2282,55 @@ public class CPU extends Thread{
 //		
 //	}
 	
-	private void init() {
+	public void init() {
 		
 		this.state = CPUState.CPU_STATE_EXECUTING;
 		registers = new char[8];
 		
 		//The entry point of the program
 		//TODO: temp test for bootstrap
-		pc = 0x0;//0x0100;
+		pc = 0x0100;//0x0100;
 		sp = 0xFFFE;
 		
 		//initial data loaded into RAM/registers
-		/*
+		
 		registers[INDEX_A] = 0x01;	registers[INDEX_F] = 0xB0;
 		registers[INDEX_B] = 0x00;	registers[INDEX_C] = 0x13;
 		registers[INDEX_D] = 0x00;	registers[INDEX_E] = 0xD8;
 		registers[INDEX_L] = 0x01;	registers[INDEX_L] = 0x4D;
 		
+		gameBoy.memory.writeByte(0xFF05, (char)0x00);	//TIMA
+		gameBoy.memory.writeByte(0xFF06, (char)0x00);	//TMA
+		gameBoy.memory.writeByte(0xFF07, (char)0x00);	//TAC
+		gameBoy.memory.writeByte(0xFF10, (char)0x80);	//NR10
+		gameBoy.memory.writeByte(0xFF11, (char)0xBF);	//NR11
+		gameBoy.memory.writeByte(0xFF12, (char)0xF3);	//NR12
+		gameBoy.memory.writeByte(0xFF14, (char)0xBF);	//NR14
+		gameBoy.memory.writeByte(0xFF16, (char)0x3F);	//NR21
+		gameBoy.memory.writeByte(0xFF17, (char)0x00);	//NR22
+		gameBoy.memory.writeByte(0xFF19, (char)0xBF);	//NR24
+		gameBoy.memory.writeByte(0xFF1A, (char)0x7F);	//NR30
+		gameBoy.memory.writeByte(0xFF1B, (char)0xFF);	//NR31
+		gameBoy.memory.writeByte(0xFF1C, (char)0x9F);	//NR32
+		gameBoy.memory.writeByte(0xFF1E, (char)0xBF);	//NR33
+		gameBoy.memory.writeByte(0xFF20, (char)0xFF);	//NR41
+		gameBoy.memory.writeByte(0xFF21, (char)0x00);	//NR42
+		gameBoy.memory.writeByte(0xFF22, (char)0x00);	//NR43
+		gameBoy.memory.writeByte(0xFF23, (char)0xBF);	//NR30
+		gameBoy.memory.writeByte(0xFF24, (char)0x77);	//NR50
+		gameBoy.memory.writeByte(0xFF25, (char)0xF3);	//NR51
+		gameBoy.memory.writeByte(0xFF26, (char)0xF1); 	//NR52, $F0 for super gameboy
+		gameBoy.memory.writeByte(0xFF40, (char)0x91);	//LCDC
+		gameBoy.memory.writeByte(0xFF42, (char)0x00);	//SCY
+		gameBoy.memory.writeByte(0xFF43, (char)0x00);	//SCX
+		gameBoy.memory.writeByte(0xFF45, (char)0x00);	//LYC
+		gameBoy.memory.writeByte(0xFF47, (char)0xFC);	//BGP
+		gameBoy.memory.writeByte(0xFF48, (char)0xFF);	//OBPO
+		gameBoy.memory.writeByte(0xFF49, (char)0xFF);	//OBP1
+		gameBoy.memory.writeByte(0xFF4A, (char)0x00);	//WY
+		gameBoy.memory.writeByte(0xFF4B, (char)0x00);	//WX
+		gameBoy.memory.writeByte(0xFFFF, (char)0x00);	//IE
 		
-		gameBoy.memory[0xFF05] = 0x00;	//TIMA
-		gameBoy.memory[0xFF06] = 0x00;	//TMA
-		gameBoy.memory[0xFF07] = 0x00;	//TAC
-		gameBoy.memory[0xFF10] = 0x80;	//NR10
-		gameBoy.memory[0xFF11] = 0xBF;	//NR11
-		gameBoy.memory[0xFF12] = 0xF3;	//NR12
-		gameBoy.memory[0xFF14] = 0xBF;	//NR14
-		gameBoy.memory[0xFF16] = 0x3F;	//NR21
-		gameBoy.memory[0xFF17] = 0x00;	//NR22
-		gameBoy.memory[0xFF19] = 0xBF;	//NR24
-		gameBoy.memory[0xFF1A] = 0x7F;	//NR30
-		gameBoy.memory[0xFF1B] = 0xFF;	//NR31
-		gameBoy.memory[0xFF1C] = 0x9F;	//NR32
-		gameBoy.memory[0xFF1E] = 0xBF;	//NR33
-		gameBoy.memory[0xFF20] = 0xFF;	//NR41
-		gameBoy.memory[0xFF21] = 0x00;	//NR42
-		gameBoy.memory[0xFF22] = 0x00;	//NR43
-		gameBoy.memory[0xFF23] = 0xBF;	//NR30
-		gameBoy.memory[0xFF24] = 0x77;	//NR50
-		gameBoy.memory[0xFF25] = 0xF3;	//NR51
-		gameBoy.memory[0xFF26] = 0xF1; 	//NR52, $F0 for super gameboy
-		gameBoy.memory[0xFF40] = 0x91;	//LCDC
-		gameBoy.memory[0xFF42] = 0x00;	//SCY
-		gameBoy.memory[0xFF43] = 0x00;	//SCX
-		gameBoy.memory[0xFF45] = 0x00;	//LYC
-		gameBoy.memory[0xFF47] = 0xFC;	//BGP
-		gameBoy.memory[0xFF48] = 0xFF;	//OBPO
-		gameBoy.memory[0xFF49] = 0xFF;	//OBP1
-		gameBoy.memory[0xFF4A] = 0x00;	//WY
-		gameBoy.memory[0xFF4B] = 0x00;	//WX
-		gameBoy.memory[0xFFFF] = 0x00;	//IE
-		*/
 	}
 	
 	
