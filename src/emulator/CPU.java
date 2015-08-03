@@ -113,9 +113,10 @@ public class CPU extends Thread{
 		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
-		if(pc == 0x29FA){
-			System.out.println("break");
-		}
+//		if(pc == 0x031A){
+//			System.out.println("break");
+//		}
+		
 		
 		switch(currentOpcode){
 		
@@ -976,7 +977,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x2A: {
-			char address = (char)((registers[INDEX_H] << 8) & registers[INDEX_L]);
+			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
 			registers[INDEX_A] = gameBoy.memory.readByte(address);
 			
 			address++;
@@ -2073,7 +2074,7 @@ public class CPU extends Thread{
 						
 			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp--;
+			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
 			
 			pc = (char)((immediateMS << 8) | immediateLS);
@@ -2131,7 +2132,7 @@ public class CPU extends Thread{
 			char retAddMS = gameBoy.memory.readByte(sp);
 			sp ++;
 			char retAddLS = gameBoy.memory.readByte(sp);
-			pc ++;
+			sp ++;
 			
 			pc = (char)((retAddMS << 8) | retAddLS);
 			
@@ -2829,6 +2830,10 @@ public class CPU extends Thread{
 			
 		}
 		
+		case 0xEF:{
+			System.out.println("break");
+		}
+		
 
 		
 			default:{
@@ -2874,7 +2879,7 @@ public class CPU extends Thread{
 		registers[INDEX_A] = 0x01;	registers[INDEX_F] = 0xB0;
 		registers[INDEX_B] = 0x00;	registers[INDEX_C] = 0x13;
 		registers[INDEX_D] = 0x00;	registers[INDEX_E] = 0xD8;
-		registers[INDEX_L] = 0x01;	registers[INDEX_L] = 0x4D;
+		registers[INDEX_H] = 0x01;	registers[INDEX_L] = 0x4D;
 		
 		gameBoy.memory.writeByte(0xFF05, (char)0x00, HardwareType.CPU);	//TIMA
 		gameBoy.memory.writeByte(0xFF06, (char)0x00, HardwareType.CPU);	//TMA
