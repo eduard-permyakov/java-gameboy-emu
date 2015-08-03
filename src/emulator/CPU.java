@@ -51,6 +51,8 @@ public class CPU extends Thread{
 	public CPU(GameBoy gameBoy, CyclicBarrier barrier) {
 		this.gameBoy = gameBoy;
 		this.barrier = barrier;
+		this.registers = new char[8];
+
 //		init();
 	}
 	
@@ -1856,6 +1858,153 @@ public class CPU extends Thread{
 			break;
 		}
 		
+		case 0xA8:{
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_B]) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xA9:{
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_C]) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xAA:{
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_D]) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xAB:{
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_E]) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xAC:{
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_H]) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xAD:{
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ registers[INDEX_L]) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xAE:{
+			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			char value = gameBoy.memory.readByte(address);
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ value) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0xEE:{
+			char immediate = gameBoy.memory.readByte(++pc);
+			registers[INDEX_A] = (char)((registers[INDEX_A] ^ immediate) & 0xFF);
+			
+			if(registers[INDEX_A] == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
 		case 0x05: {
 			char result = (char) (registers[INDEX_B]-1);
 			
@@ -2290,6 +2439,50 @@ public class CPU extends Thread{
 			
 		}
 		
+		case 0xB7:{
+			char valueReg = registers[INDEX_A];
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | valueReg) != 0){
+				registers[INDEX_A] = (char)(valueA | valueReg);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xB0:{
+			char valueReg = registers[INDEX_B];
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | valueReg) != 0){
+				registers[INDEX_A] = (char)(valueA | valueReg);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
 		case 0xB1: {
 			char valueReg = registers[INDEX_C];
 			char valueA = registers[INDEX_A];
@@ -2311,6 +2504,138 @@ public class CPU extends Thread{
 			
 			break;
 			
+		}
+		
+		case 0xB2:{
+			char valueReg = registers[INDEX_D];
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | valueReg) != 0){
+				registers[INDEX_A] = (char)(valueA | valueReg);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xB3:{
+			char valueReg = registers[INDEX_E];
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | valueReg) != 0){
+				registers[INDEX_A] = (char)(valueA | valueReg);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xB4:{
+			char valueReg = registers[INDEX_H];
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | valueReg) != 0){
+				registers[INDEX_A] = (char)(valueA | valueReg);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		case 0xB5:{
+			char valueReg = registers[INDEX_L];
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | valueReg) != 0){
+				registers[INDEX_A] = (char)(valueA | valueReg);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xB6:{
+			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			char value = gameBoy.memory.readByte(address);
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | value) != 0){
+				registers[INDEX_A] = (char)(valueA | value);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0xF6:{
+			char immediate = gameBoy.memory.readByte(++pc);
+			char valueA = registers[INDEX_A];
+			
+			if((valueA | immediate) != 0){
+				registers[INDEX_A] = (char)(valueA | immediate);
+				registers[INDEX_F] &= ~ZERO_BIT;
+			}else{
+				registers[INDEX_A] = 0x00;
+				registers[INDEX_F] |= ZERO_BIT;
+			}
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			registers[INDEX_F] &= ~CARRY_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
 		}
 		
 		case 0xFB:{
@@ -2423,7 +2748,8 @@ public class CPU extends Thread{
 			registers[INDEX_F] |= HALF_CARRY_BIT;
 			registers[INDEX_F] &= ~CARRY_BIT;
 			
-			M += 1;
+			M += 1;		registers = new char[8];
+
 			T += 4;
 			
 			break;
@@ -2503,6 +2829,8 @@ public class CPU extends Thread{
 			
 		}
 		
+
+		
 			default:{
 				System.err.println("Unsupported Opcode!");
 				System.exit(0);
@@ -2535,7 +2863,6 @@ public class CPU extends Thread{
 	public void init() {
 		
 		this.state = CPUState.CPU_STATE_EXECUTING;
-		registers = new char[8];
 		
 		//The entry point of the program
 		//TODO: temp test for bootstrap
