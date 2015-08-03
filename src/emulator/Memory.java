@@ -4,6 +4,15 @@ import java.awt.Color;
 import java.util.Arrays;
 import emulator.LCDController;
 
+enum HardwareType {
+	CPU,
+	LCDController,
+	Joypad,
+	ROMLoader,
+	Memory
+}
+//TODO: control read access based on type...
+
 public class Memory {
 	
 	private char[] memory;
@@ -22,18 +31,39 @@ public class Memory {
 	
 
 	public Memory(GameBoy gameBoy){
-		memory = new char[65536];
+		this.memory = new char[65536];
 		this.gameBoy = gameBoy;
+		
+		//set all lines of the joypad register high initially
+		memory[InputHandler.JOYPAD_ADDR] = (char)0xFF;
 	}
 	
-	public void writeByte(int address, char data){
+	public void writeByte(int address, char data, HardwareType type){
+		
+		//restrict which bits can be written to by diff. hardware for the joypad register
+		if(address == InputHandler.JOYPAD_ADDR){
+			switch(type){
+			
+			case CPU:
+				memory[address] = (char) ((char)(~0x30 & memory[address]));
+				memory[address] = (char) ((char)(data & 0x30) | memory[address]);
+			case LCDController:	break;
+			case Joypad:
+				memory[address] = (char) ((char)(~0xCF & memory[address]));
+				memory[address] = (char) ((char)(data & 0xCF) | memory[address]);
+			case ROMLoader:		break;
+			default:			break;
+			}
+			return;
+		}
 		
 		memory[address] = data;
 		
 		//echo the 8kb internal RAM
 		if(address >= 0xC000 && address <  0xE000){
-			char echoAddress = (char)(address + 0x2000);
-			memory[echoAddress] = data; 
+			int echoAddress = (address + 0x2000);
+//			memory[echoAddress] = data; 
+			writeByte(echoAddress, data, HardwareType.Memory);
 		}
 		
 		//actions based on specific register addresses
@@ -147,7 +177,10 @@ public class Memory {
 		}
 	}
 	
-	public void setMask(int address,char mask, boolean bit){
+	public void setMask(int address,char mask, boolean bit, HardwareType type){
+		if(address == InputHandler.JOYPAD_ADDR){
+			System.out.println("writing!!!!");
+		}
 		if(bit == true){
 			memory[address] |= (mask & 0xFF);
 		}else{
@@ -167,7 +200,8 @@ public class Memory {
 		char sourceAddress = (char)(((memory[LCDController.DMA_REGISTER_ADDR] / 0x100) << 8) | 0x0);
 		char destinationAddress = 0xFE00;
 		for(int i = 0; i <= 0x9F; i++){
-			memory[destinationAddress + i] = memory[sourceAddress + i];
+			this.writeByte(destinationAddress + i, memory[sourceAddress + i], HardwareType.Memory);
+//			memory[destinationAddress + i] = memory[sourceAddress + i];
 		}
 	}
 	

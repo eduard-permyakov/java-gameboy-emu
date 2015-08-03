@@ -8,9 +8,11 @@ public class ScreenFrame extends JFrame{
 	
 	public ScreenPanel screenPanel;
 
-	public ScreenFrame(){
+	public ScreenFrame(GameBoy gameBoy){
 		super();
 		init();
+		
+		this.addKeyListener(new InputHandler(gameBoy));
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);

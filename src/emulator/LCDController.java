@@ -206,32 +206,34 @@ public class LCDController extends Thread{
 		//LCD status register
 		//TODO: figure out the interrupts
 		if(gameBoy.memory.readByte(LYC_REGISTER_ADDR) == gameBoy.memory.readByte(LY_REGISTER_ADDR)){
-			gameBoy.memory.setMask(LCD_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, true);
-			gameBoy.memory.setMask(LCD_ADDR, COINCIDENCE_FLAG_BIT, true);
+			gameBoy.memory.setMask(LCD_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, true, HardwareType.LCDController);
+			gameBoy.memory.setMask(LCD_ADDR, COINCIDENCE_FLAG_BIT, true, HardwareType.LCDController);
 		}else{
-			gameBoy.memory.setMask(LCD_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, false);
-			gameBoy.memory.setMask(LCD_ADDR, COINCIDENCE_FLAG_BIT, false);
+			gameBoy.memory.setMask(LCD_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, false, HardwareType.LCDController);
+			gameBoy.memory.setMask(LCD_ADDR, COINCIDENCE_FLAG_BIT, false, HardwareType.LCDController);
 		}
 		
 		//hblank
 		if(this.state == LCDControllerState.LCD_STATE_HBLANK){
-			gameBoy.memory.setMask(LCD_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, true);
+			gameBoy.memory.setMask(LCD_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, true, HardwareType.LCDController);
 		}else{
-			gameBoy.memory.setMask(LCD_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, false);
+			gameBoy.memory.setMask(LCD_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, false, HardwareType.LCDController);
 		}
 		
 		//vblank
 		if(this.state == LCDControllerState.LCD_STATE_VBLANK){
-			gameBoy.memory.writeByte(LCD_ADDR, (char)(gameBoy.memory.readByte(LCD_ADDR) | MODE_1_V_BLANK_INTERRUPT_BIT));
+			gameBoy.memory.writeByte(LCD_ADDR, (char)(gameBoy.memory.readByte(LCD_ADDR) | MODE_1_V_BLANK_INTERRUPT_BIT), 
+					HardwareType.LCDController);
 		}else{
-			gameBoy.memory.writeByte(LCD_ADDR, (char)(gameBoy.memory.readByte(LCD_ADDR) & ~MODE_1_V_BLANK_INTERRUPT_BIT));
+			gameBoy.memory.writeByte(LCD_ADDR, (char)(gameBoy.memory.readByte(LCD_ADDR) & ~MODE_1_V_BLANK_INTERRUPT_BIT),
+					HardwareType.LCDController);
 		}
 		
 		//oam
 		if(this.state == LCDControllerState.LCD_STATE_READING_OAM_ONLY){
-			gameBoy.memory.setMask(LCD_ADDR, MODE_2_OAM_INTERRUPT, true);
+			gameBoy.memory.setMask(LCD_ADDR, MODE_2_OAM_INTERRUPT, true, HardwareType.LCDController);
 		}else{
-			gameBoy.memory.setMask(LCD_ADDR, MODE_2_OAM_INTERRUPT, false);;//if i-enabled
+			gameBoy.memory.setMask(LCD_ADDR, MODE_2_OAM_INTERRUPT, false, HardwareType.LCDController);//if i-enabled
 		}
 		
 		//mode flag
@@ -249,13 +251,13 @@ public class LCDController extends Thread{
 			default:
 				return;
 		}
-		gameBoy.memory.setMask(LCD_ADDR, (char)0b11, false);
-		gameBoy.memory.setMask(LCD_ADDR, modeFlag, true);
+		gameBoy.memory.setMask(LCD_ADDR, (char)0b11, false, HardwareType.LCDController);
+		gameBoy.memory.setMask(LCD_ADDR, modeFlag, true, HardwareType.LCDController);
 	}
 	
 	private void updateLYRegister() {
 //		System.out.println(Integer.toString(y));
-		gameBoy.memory.writeByte(LY_REGISTER_ADDR, y);
+		gameBoy.memory.writeByte(LY_REGISTER_ADDR, y, HardwareType.LCDController);
 	}
 	
 	private void readOAM(){

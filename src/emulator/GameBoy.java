@@ -15,7 +15,7 @@ public class GameBoy extends Thread{
 	private CPU cpu;
 	private LCDController lcd;
 	private ScreenFrame screenFrame;
-	public volatile Memory memory;
+	public Memory memory;
 		
 	public GameBoy() {
 		init();
@@ -28,7 +28,7 @@ public class GameBoy extends Thread{
 		memory = new Memory(this);
 		cpu = new CPU(this, barrier);
 		lcd = new LCDController(this, barrier);
-		screenFrame = new ScreenFrame();
+		screenFrame = new ScreenFrame(this);
 		
 		lcdControllerIsIdle = false;
 

@@ -24,7 +24,7 @@ public class RomLoader {
 			int offset = 0;
 			while(input.available() > 0) {
 				
-				gameBoy.memory.writeByte(0x0000 + offset, (char)(input.readByte() & 0xFF));
+				gameBoy.memory.writeByte(0x0000 + offset, (char)(input.readByte() & 0xFF), HardwareType.ROMLoader);
 				offset++;
 			}
 			
