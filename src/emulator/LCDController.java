@@ -141,6 +141,10 @@ public class LCDController extends Thread{
 	
 	//TODO: do none of this if the LCD is disabled still
 	public void run(){
+		
+		y++;	
+		if(y > 153)
+			y = 0;
 				
 		updateStatusRegister();
 		updateLYRegister();
@@ -191,9 +195,7 @@ public class LCDController extends Thread{
 
 		}
 		
-		y++;	
-		if(y > 153)
-			y = 0;
+
 //		System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
 	}
 	
@@ -298,7 +300,7 @@ public class LCDController extends Thread{
 	//bugged
 	private void makeLinePixelArray(){
 		//TODO: diff. tile addressing if it's BG #2
-		final int bgTileBaseIndex = ((int)((scrollPosY+y)/8))*32;
+		final int bgTileBaseIndex = ((int)((scrollPosY+y)/8))*32 % 1024; //double check this
 		final int yCoordinate = (scrollPosY+y)%8;
 		//System.out.println("scrY: " +scrollPosY);
 		

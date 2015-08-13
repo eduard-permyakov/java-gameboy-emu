@@ -13,7 +13,9 @@ public class Main{
 		gameBoy = new GameBoy();
 		
 		romLoader = new RomLoader(gameBoy);
-		romLoader.loadROM("./TestROMs/Tetris.gb");
+		romLoader.loadROM("./TestROMs/cpu_instrs.gb");
+//		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
+		//romLoader.loadROM("./TestROMs/Tetris.gb");
 //		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
 		
 		gameBoy.start();

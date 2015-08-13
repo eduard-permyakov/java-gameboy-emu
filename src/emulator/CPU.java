@@ -188,6 +188,78 @@ public class CPU extends Thread{
 				break;
 			}
 			
+			case 0x87:{
+				registers[INDEX_A] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x80:{
+				registers[INDEX_B] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x81:{
+				registers[INDEX_C] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x82:{
+				registers[INDEX_D] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x83:{
+				registers[INDEX_E] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x84:{
+				registers[INDEX_H] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x85:{
+				registers[INDEX_L] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
+			case 0x86:{
+				registers[INDEX_L] &= ~1;
+				
+				M += 2;
+				T += 8;
+				
+				break;
+			}
+			
 				default:
 					System.err.println("Unsupported opcode : CB "+Integer.toHexString(currentOpcode).toUpperCase());
 					System.exit(0);
@@ -1229,9 +1301,9 @@ public class CPU extends Thread{
 		
 		case 0xE1: {
 			
-			registers[INDEX_L] = gameBoy.memory.readByte(sp);
-			sp ++;
 			registers[INDEX_H] = gameBoy.memory.readByte(sp);
+			sp ++;
+			registers[INDEX_L] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1251,7 +1323,7 @@ public class CPU extends Thread{
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
 			else
-				registers[INDEX_F] |= ~ZERO_BIT;
+				registers[INDEX_F] &= ~ZERO_BIT;
 			
 			//reset n flag
 			registers[INDEX_F] &= ~OP_BIT;
@@ -1268,7 +1340,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			registers[INDEX_A] = (char)(result & 0xF);
+			registers[INDEX_A] = (char)(result & 0xFF);
 			
 			M += 1;
 			T += 4;
@@ -2181,6 +2253,21 @@ public class CPU extends Thread{
 			break;
 		}
 		
+		case 0x03:{
+			
+			char value = (char)((registers[INDEX_B] << 8) | registers[INDEX_C]);
+			value++;
+			
+			registers[INDEX_B] = (char)(value >> 8);
+			registers[INDEX_C] = (char)(value & 0xFF);
+			
+			M += 2;
+			T += 8;
+
+			
+			break;
+		}
+		
 		case 0x13: {
 			
 			char value = (char)((registers[INDEX_D] << 8) | registers[INDEX_E]);
@@ -2194,6 +2281,17 @@ public class CPU extends Thread{
 
 			
 			break;
+		}
+		
+		case 0x33:{
+			sp++;
+			
+			M += 2;
+			T += 8;
+
+			
+			break;
+			
 		}
 		
 		case 0x3D: {
@@ -2271,6 +2369,26 @@ public class CPU extends Thread{
 			return;
 		}
 		
+		case 0x3C:{
+			int result = registers[INDEX_A]+1;
+			
+			if((result&0xFF) == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) + 1 > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result&0xFF);
+			
+			break;
+		}
+		
 		case 0x04: {
 			int result = registers[INDEX_B]+1;
 			
@@ -2322,6 +2440,262 @@ public class CPU extends Thread{
 			
 			break;	
 			
+		}
+		
+		case 0x91:{
+			char result = (char)(registers[INDEX_A] - registers[INDEX_C]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_C] &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_C])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+		}
+		
+		case 0x97:{
+			char result = (char)(registers[INDEX_A] - registers[INDEX_A]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_A] &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_A])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+		}
+		
+		case 0x92:{
+			char result = (char)(registers[INDEX_A] - registers[INDEX_D]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_D] &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_D])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+		}
+		
+		case 0x93:{
+			char result = (char)(registers[INDEX_A] - registers[INDEX_E]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_E] &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_E])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+		}
+		
+		case 0x94:{
+			char result = (char)(registers[INDEX_A] - registers[INDEX_H]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_H] &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_H])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+		}
+		
+		case 0x95:{
+			char result = (char)(registers[INDEX_A] - registers[INDEX_L]);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_L] &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < registers[INDEX_L])
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;	
+		}
+		
+		case 0x96:{
+			char value = gameBoy.memory.readByte((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			char result = (char)(registers[INDEX_A] - value);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 2;
+			T += 8;
+			
+			break;	
+		}
+		
+		case 0xD6:{
+			char value = gameBoy.memory.readByte(++pc);
+			char result = (char)(registers[INDEX_A] - value);
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 2;
+			T += 8;
 		}
 		
 		case 0x1D: {
@@ -2830,11 +3204,947 @@ public class CPU extends Thread{
 			
 		}
 		
-		case 0xEF:{
-			System.out.println("break");
+		case 0xC7:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0000;
+			
+			M += 8;
+			T += 32;
+			
+			return;
 		}
 		
+		case 0xCF:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0008;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0xD7:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0010;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0xDF:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0018;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0xE7:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0020;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0xEF:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0028;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0xF7:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0030;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0xFF:{
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			
+			pc = 0x0038;
+			
+			M += 8;
+			T += 32;
+			
+			return;
+		}
+		
+		case 0x09:{
+			char value1 = (char)((registers[INDEX_B] << 8) | registers[INDEX_C]);
+			char value2 = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			int result = (value1 + value2);
 
+			registers[INDEX_H] = (char)(result >> 8 & 0xFF);
+			registers[INDEX_L] = (char)(result & 0xFF);
+			
+			if(result > 0xFFFF)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			if((value1&0xFF + value2&0xFF) > 0xFF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0x19:{
+			
+			char value1 = (char)((registers[INDEX_D] << 8) | registers[INDEX_E]);
+			char value2 = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			int result = (value1 + value2);
+
+			registers[INDEX_H] = (char)(result >> 8 & 0xFF);
+			registers[INDEX_L] = (char)(result & 0xFF);
+			
+			if(result > 0xFFFF)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			if((value1&0xFF + value2&0xFF) > 0xFF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0x29:{
+			char value1 = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			char value2 = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			int result = (value1 + value2);
+
+			registers[INDEX_H] = (char)(result >> 8 & 0xFF);
+			registers[INDEX_L] = (char)(result & 0xFF);
+			
+			if(result > 0xFFFF)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			if((value1&0xFF + value2&0xFF) > 0xFF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0x39:{
+			char value1 = sp;
+			char value2 = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			int result = (value1 + value2);
+
+			registers[INDEX_H] = (char)(result >> 8 & 0xFF);
+			registers[INDEX_L] = (char)(result & 0xFF);
+			
+			if(result > 0xFFFF)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			if((value1&0xFF + value2&0xFF) > 0xFF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0xE9:{
+			pc = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			
+			M += 1;
+			T += 4;
+			
+			return;
+		}
+		
+		case 0xE8:{
+			
+			byte signedImmediate = (byte)(gameBoy.memory.readByte(++pc));
+			
+			sp += signedImmediate;
+			
+			registers[INDEX_F] &= ~(ZERO_BIT | OP_BIT);
+			
+//			if(sp > 0xFFFF)
+//				registers[INDEX_F] |= CARRY_BIT;
+//			else
+//				registers[INDEX_F] &= ~CARRY_BIT;
+//			
+//			if((sp&0xFF + signedImmediate&0xFF) > 0xFF)
+//				registers[INDEX_F] |= HALF_CARRY_BIT;
+//			else
+//				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			M += 4;
+			T += 16;
+			
+			break;
+		}
+		
+		case 0xC4:{
+			
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
+			char value = (char)(immediateMS << 8 & immediateLS);
+			
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & ZERO_BIT) == 0){
+				pc = value;
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xCC:{
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
+			char value = (char)(immediateMS << 8 & immediateLS);
+			
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & ZERO_BIT) > 0){
+				pc = value;
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xD4:{
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
+			char value = (char)(immediateMS << 8 & immediateLS);
+			
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & CARRY_BIT) == 0){
+				pc = value;
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xDC:{
+			char immediateLS = gameBoy.memory.readByte(++pc);
+			char immediateMS = gameBoy.memory.readByte(++pc);
+			char value = (char)(immediateMS << 8 & immediateLS);
+			
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & CARRY_BIT) > 0){
+				pc = value;
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0x14:{
+			int result = registers[INDEX_D]+1;
+			
+			if((result&0xFF) == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((registers[INDEX_D] &0xF) + 1 > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_D] = (char)(result&0xFF);
+			
+			break;
+		}
+		
+		case 0x1C:{
+			int result = registers[INDEX_E]+1;
+			
+			if((result&0xFF) == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((registers[INDEX_E] &0xF) + 1 > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_E] = (char)(result&0xFF);
+			
+			break;
+		}
+		
+		case 0x2C:{
+			int result = registers[INDEX_L]+1;
+			
+			if((result&0xFF) == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((registers[INDEX_L] &0xF) + 1 > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			registers[INDEX_L] = (char)(result&0xFF);
+			
+			break;
+		}
+		
+		case 0x34:{
+			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			int value = gameBoy.memory.readByte(address);
+			int result = value+1;
+			
+			if((result&0xFF) == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] &= ~OP_BIT;
+			
+			if((value &0xF) + 1 > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			gameBoy.memory.writeByte(address, (char)(result&0xFF), HardwareType.CPU);
+			
+			break;
+		}
+		
+		case 0xC0:{
+			
+			M += 2;
+			T += 8;
+			
+			if((registers[INDEX_F] & ZERO_BIT) == 0){
+				char retAddMS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				
+				pc = (char)((retAddMS << 8) | retAddLS);
+				
+				return;
+			}
+			
+			break;
+
+		}
+		
+		case 0xC8:{
+			M += 2;
+			T += 8;
+			
+			if((registers[INDEX_F] & ZERO_BIT) > 0){
+				char retAddMS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				
+				pc = (char)((retAddMS << 8) | retAddLS);
+				
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xD0:{
+			M += 2;
+			T += 8;
+			
+			if((registers[INDEX_F] & CARRY_BIT) == 0){
+				char retAddMS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				
+				pc = (char)((retAddMS << 8) | retAddLS);
+				
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xD8:{
+			M += 2;
+			T += 8;
+			
+			if((registers[INDEX_F] & ZERO_BIT) > 0){
+				char retAddMS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				
+				pc = (char)((retAddMS << 8) | retAddLS);
+				
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0x9F:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_A] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_A] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_A] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x98:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_B] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_B] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_B] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x99:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_C] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_C] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_C] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x9A:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_D] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_D] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_D] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x9B:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_E] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_E] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_E] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x9C:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_H] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_H] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_H] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x9D:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (registers[INDEX_L] + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (registers[INDEX_L] + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (registers[INDEX_L] + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x9E:{
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			
+			char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			int value = gameBoy.memory.readByte(address);
+			
+			char result = (char)(registers[INDEX_A] - (value + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (value + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (value + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0xBF:{
+			char value = registers[INDEX_A];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xB8:{
+			char value = registers[INDEX_B];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xB9:{
+			char value = registers[INDEX_C];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xBA:{
+			char value = registers[INDEX_D];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xBB:{
+			char value = registers[INDEX_E];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xBC:{
+			char value = registers[INDEX_H];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xBD:{
+			char value = registers[INDEX_L];
+			char result = (char)(registers[INDEX_A] - value);
+			
+			if(registers[INDEX_A] == value)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			registers[INDEX_F] |= OP_BIT;
+			
+			if((registers[INDEX_A] &0xF) < (value &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			if(registers[INDEX_A] < value)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+						
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0xD9:{
+			char retAddMS = gameBoy.memory.readByte(sp);
+			sp ++;
+			char retAddLS = gameBoy.memory.readByte(sp);
+			sp ++;
+			
+			pc = (char)((retAddMS << 8) | retAddLS);
+			
+			M += 2;
+			T += 8;
+			
+			return;
+		}
 		
 			default:{
 				System.err.println("Unsupported Opcode!");
@@ -2901,7 +4211,7 @@ public class CPU extends Thread{
 		gameBoy.memory.writeByte(0xFF23, (char)0xBF, HardwareType.CPU);	//NR30
 		gameBoy.memory.writeByte(0xFF24, (char)0x77, HardwareType.CPU);	//NR50
 		gameBoy.memory.writeByte(0xFF25, (char)0xF3, HardwareType.CPU);	//NR51
-		gameBoy.memory.writeByte(0xFF26, (char)0xF1, HardwareType.CPU); 	//NR52, $F0 for super gameboy
+		gameBoy.memory.writeByte(0xFF26, (char)0xF1, HardwareType.CPU); //NR52, $F0 for super gameboy
 		gameBoy.memory.writeByte(0xFF40, (char)0x91, HardwareType.CPU);	//LCDC
 		gameBoy.memory.writeByte(0xFF42, (char)0x00, HardwareType.CPU);	//SCY
 		gameBoy.memory.writeByte(0xFF43, (char)0x00, HardwareType.CPU);	//SCX
