@@ -23,8 +23,15 @@ public class RomLoader {
 			
 			int offset = 0;
 			while(input.available() > 0) {
-				
-				gameBoy.memory.writeByte(0x0000 + offset, (char)(input.readByte() & 0xFF), HardwareType.ROMLoader);
+				//&set cartridge type
+				if(offset == 0x147){
+					char readByte = (char)(input.readByte() & 0xFF);
+					gameBoy.memory.writeROMByte(0x0000 + offset, readByte);
+					gameBoy.memory.setMemoryBankingMode(readByte);
+				}else{
+					gameBoy.memory.writeROMByte(0x0000 + offset, (char)(input.readByte() & 0xFF));
+
+				}
 				offset++;
 			}
 			

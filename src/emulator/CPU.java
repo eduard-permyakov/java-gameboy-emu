@@ -4146,6 +4146,15 @@ public class CPU extends Thread{
 			return;
 		}
 		
+		case 0x3B:{
+			sp --;
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
 			default:{
 				System.err.println("Unsupported Opcode!");
 				System.exit(0);
