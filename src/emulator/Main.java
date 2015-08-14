@@ -12,6 +12,12 @@ public class Main{
 	public Main() {
 		gameBoy = new GameBoy();
 		
+//		char a = 0xdf;
+//		char b = 0xff;
+//		char c = (char)(a << 8 | b);
+//		
+//		System.out.println(Integer.toHexString(c));
+		
 		romLoader = new RomLoader(gameBoy);
 		romLoader.loadROM("./TestROMs/cpu_instrs.gb");
 //		romLoader.loadROM("./TestROMs/GBTICTAC.GB");

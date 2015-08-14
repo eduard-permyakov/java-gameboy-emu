@@ -24,11 +24,11 @@ public class Memory {
 	private int memoryBankingMode;	//TODO: make this cleaner with enum & stuff
 	
 	//mbc1 - improve this...
-	private MBC1MaxMemMode mbc1Mode;
-	private boolean mbcRAM1enabled;
-	private char[][] mbc1Banks;
-	private char currentRomBankAddr;
-	private final char mbc1Offset = 0x4000;
+	private MBC1MaxMemMode 	mbc1Mode;
+	private boolean 		mbcRAM1enabled;
+	private char[][] 		mbc1Banks;
+	private char 			currentRomBankAddr;
+	private final char		mbc1Offset = 0x4000;
 	
 	private char[] memory;
 	private GameBoy gameBoy;
@@ -64,7 +64,7 @@ public class Memory {
 	
 	public void writeROMByte(int address, char data){
 		switch(this.memoryBankingMode){
-			case 0:	break;
+			case 0:	this.memory[address] = data; break;
 			case 1: {
 				if(address < 0x4000){
 					this.memory[address] = data;
@@ -73,9 +73,7 @@ public class Memory {
 					mbc1Banks[bankIndex][address - (bankIndex + 1) * 0x4000] = data;
 				}
 				break;
-			}
-			default: 
-				this.memory[address] = data;
+			}				
 		}
 	}
 	
@@ -85,49 +83,51 @@ public class Memory {
 		switch(this.memoryBankingMode){
 		case 0: break;
 		case 1:{
-			if(address >= 0x0000 && address <= 0x1FFF){
-				
-				if(this.mbc1Mode == MBC1MaxMemMode.FourThirtyTwoMode){
-					switch(data & 0xF){	//TODO: figure out ram in mbc1
-					case 0b1010:	this.mbcRAM1enabled = true;		break;
-					default: 		this.mbcRAM1enabled = false;	break;
+			if(address >= 0x0000 && address <= 0x7FFF){
+				if(address >= 0x0000 && address <= 0x1FFF){
+					
+					if(this.mbc1Mode == MBC1MaxMemMode.FourThirtyTwoMode){
+						switch(data & 0xF){	//TODO: figure out ram in mbc1
+						case 0b1010:	this.mbcRAM1enabled = true;		break;
+						default: 		this.mbcRAM1enabled = false;	break;
+						}
+					}
+					return;
+
+				}else if(address >= 0x2000 && address <= 0x3FFF){
+					
+					System.out.println("will select an appropriate ROM bank at 4000-7FFF");
+					// will select an appropriate ROM bank at 4000-7FFF
+					char bankAddr = (char) (data & 0x1F);
+					if(bankAddr == 0x00)	bankAddr = 0x01;
+					if(bankAddr == 0x20)	bankAddr = 0x21;
+					if(bankAddr == 0x40)	bankAddr = 0x41;
+					if(bankAddr == 0x60)	bankAddr = 0x61;
+					this.currentRomBankAddr = bankAddr;
+					
+				}else if(address >= 0x4000 && address <= 0x5FFF){
+					
+					// will select an appropriate RAM bank at A000-C000
+					if(this.mbc1Mode == MBC1MaxMemMode.FourThirtyTwoMode){
+						this.currentRomBankAddr = (char)(data & 0b11);
+					}
+					
+					// set the two most significant ROM address lines
+					if(this.mbc1Mode == MBC1MaxMemMode.SixteenEightMode){
+						char twoBits = (char)(data & 0b11);
+						this.currentRomBankAddr &= ~0b110000;		//double check this
+						this.currentRomBankAddr |= (twoBits << 4);
+					}
+					
+				}else if(address >= 0x6000 && address <= 0x7FFF){
+					switch(data & 0x1){
+					case 0: this.mbc1Mode = MBC1MaxMemMode.SixteenEightMode;System.out.println("16-8 mode");	break;
+					case 1: this.mbc1Mode = MBC1MaxMemMode.FourThirtyTwoMode;System.out.println("4-32 mode");	break;
 					}
 				}
-
-			}else if(address >= 0x2000 && address <= 0x3FFF){
-				
-				System.out.println("will select an appropriate ROM bank at 4000-7FFF");
-				// will select an appropriate ROM bank at 4000-7FFF
-				char bankAddr = (char) (data & 0x1F);
-				if(bankAddr == 0x00)	bankAddr = 0x01;
-				if(bankAddr == 0x20)	bankAddr = 0x21;
-				if(bankAddr == 0x40)	bankAddr = 0x41;
-				if(bankAddr == 0x60)	bankAddr = 0x61;
-				this.currentRomBankAddr = bankAddr;
-				
-			}else if(address >= 0x4000 && address <= 0x5FFF){
-				
-				// will select an appropriate RAM bank at A000-C000
-				if(this.mbc1Mode == MBC1MaxMemMode.FourThirtyTwoMode){
-					this.currentRomBankAddr = (char)(data & 0b11);
-				}
-				
-				// set the two most significant ROM address lines
-				if(this.mbc1Mode == MBC1MaxMemMode.SixteenEightMode){
-					char twoBits = (char)(data & 0b11);
-					this.currentRomBankAddr &= ~0b110000;		//double check this
-					this.currentRomBankAddr |= (twoBits << 4);
-				}
-				
-			}else if(address >= 0x6000 && address <= 0x7FFF){
-				switch(data & 0x1){
-				case 0: this.mbc1Mode = MBC1MaxMemMode.SixteenEightMode;System.out.println("16-8 mode");	break;
-				case 1: this.mbc1Mode = MBC1MaxMemMode.FourThirtyTwoMode;System.out.println("4-32 mode");	break;
-				}
+				return;
 			}
-
-			
-			return;
+	
 		}
 		default: break;//add the rest of the mem. banks at some point
 		}
