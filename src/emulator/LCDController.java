@@ -122,11 +122,11 @@ public class LCDController extends Thread{
 		scrollPosX = 0;
 		scrollPosY = 0;
 		
-		spriteAttsArray = new char[40][4];
-		spritesArray = new char[384][16];
-		bgDataArray = new char[1024];
-		linePixelArray = new char[256];
-		linePixelTypeArray = new char[256];
+		spriteAttsArray 	= new char[40][4];
+		spritesArray 		= new char[384][16];
+		bgDataArray 		= new char[1024];
+		linePixelArray		= new char[256];
+		linePixelTypeArray 	= new char[256];
 	}
 	//TODO:
 	/*
@@ -139,12 +139,15 @@ public class LCDController extends Thread{
  	 *  
 	 * */
 	
+	
 	//TODO: do none of this if the LCD is disabled still
 	public void run(){
 		
-		y++;	
-		if(y > 153)
-			y = 0;
+//		if(this.state == LCDControllerState.LCD_STATE_VBLANK)
+//			System.out.println("---> VBLANK" +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+//		else
+//			System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+
 				
 		updateStatusRegister();
 		updateLYRegister();
@@ -166,6 +169,9 @@ public class LCDController extends Thread{
 //			} catch (InterruptedException e) {
 //				e.printStackTrace();
 //			}
+			y++;
+//			if(y > 143)
+//				y = 0;
 			
 			makeLinePixelArray();
 			gameBoy.projectRow(y, linePixelArray);
@@ -175,7 +181,12 @@ public class LCDController extends Thread{
 				
 			break;
 		case LCD_STATE_VBLANK:
+//			System.out.println("LY at start of VBLANK: " + (int)y);
 			winPosY = gameBoy.memory.readByte(WY_REGISTER_ADDR);
+			
+			y++;
+//			if(y > 152)
+//				y = 0;
 			
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
@@ -194,9 +205,12 @@ public class LCDController extends Thread{
 			default:
 
 		}
-		
+				
 
-//		System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
+	}
+	
+	public void resetY(){
+		y = 0;
 	}
 	
 	private void updateScrollValues(){

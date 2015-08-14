@@ -110,8 +110,8 @@ public class CPU extends Thread{
 //			}
 //		}
 		
-		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+//		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
+//		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
 		if(pc == 0x037C){
 			System.out.println("break");
@@ -1909,6 +1909,9 @@ public class CPU extends Thread{
 			
 			M += 4;
 			T += 16;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 						
 			return;
  		}
@@ -2110,6 +2113,10 @@ public class CPU extends Thread{
 				
 				M += 3;
 				T += 12;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}else{
 				M += 2;
@@ -2154,6 +2161,9 @@ public class CPU extends Thread{
 			
 			M += 6;
 			T += 24;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 			
 			return;
 		}
@@ -2210,6 +2220,9 @@ public class CPU extends Thread{
 			
 			M += 2;
 			T += 8;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 						
 			return;
 		}
@@ -2326,6 +2339,10 @@ public class CPU extends Thread{
 				
 				M += 3;
 				T += 12;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}else{
 				M += 2;
@@ -2365,6 +2382,9 @@ public class CPU extends Thread{
 			//these vals are not agreed upon?
 			M += 2;
 			T += 8;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 			
 			return;
 		}
@@ -3215,6 +3235,9 @@ public class CPU extends Thread{
 			M += 8;
 			T += 32;
 			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
+			
 			return;
 		}
 		
@@ -3228,6 +3251,9 @@ public class CPU extends Thread{
 			
 			M += 8;
 			T += 32;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 			
 			return;
 		}
@@ -3243,6 +3269,9 @@ public class CPU extends Thread{
 			M += 8;
 			T += 32;
 			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
+			
 			return;
 		}
 		
@@ -3256,6 +3285,9 @@ public class CPU extends Thread{
 			
 			M += 8;
 			T += 32;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 			
 			return;
 		}
@@ -3271,6 +3303,9 @@ public class CPU extends Thread{
 			M += 8;
 			T += 32;
 			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
+			
 			return;
 		}
 		
@@ -3284,6 +3319,9 @@ public class CPU extends Thread{
 			
 			M += 8;
 			T += 32;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 			
 			return;
 		}
@@ -3299,6 +3337,9 @@ public class CPU extends Thread{
 			M += 8;
 			T += 32;
 			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
+			
 			return;
 		}
 		
@@ -3312,6 +3353,9 @@ public class CPU extends Thread{
 			
 			M += 8;
 			T += 32;
+			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
 			
 			return;
 		}
@@ -3427,6 +3471,9 @@ public class CPU extends Thread{
 			M += 1;
 			T += 4;
 			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
+			
 			return;
 		}
 		
@@ -3465,6 +3512,10 @@ public class CPU extends Thread{
 			
 			if((registers[INDEX_F] & ZERO_BIT) == 0){
 				pc = value;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3481,6 +3532,10 @@ public class CPU extends Thread{
 			
 			if((registers[INDEX_F] & ZERO_BIT) > 0){
 				pc = value;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3497,6 +3552,10 @@ public class CPU extends Thread{
 			
 			if((registers[INDEX_F] & CARRY_BIT) == 0){
 				pc = value;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3513,6 +3572,10 @@ public class CPU extends Thread{
 			
 			if((registers[INDEX_F] & CARRY_BIT) > 0){
 				pc = value;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3614,6 +3677,9 @@ public class CPU extends Thread{
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
 				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3633,6 +3699,9 @@ public class CPU extends Thread{
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
 				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3651,6 +3720,9 @@ public class CPU extends Thread{
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
 				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -3668,6 +3740,9 @@ public class CPU extends Thread{
 				sp ++;
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
 				
 				return;
 			}
@@ -4143,6 +4218,9 @@ public class CPU extends Thread{
 			M += 2;
 			T += 8;
 			
+			gameBoy.setMachineCycles(M);
+			gameBoy.setClockCycles(T);
+			
 			return;
 		}
 		
@@ -4167,6 +4245,9 @@ public class CPU extends Thread{
 				M += 1;
 				T += 4;
 				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
 				return;
 			}
 			
@@ -4183,6 +4264,9 @@ public class CPU extends Thread{
 				
 				M += 1;
 				T += 4;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
 				
 				return;
 			}
@@ -4225,47 +4309,47 @@ public class CPU extends Thread{
 		
 		//The entry point of the program
 		//TODO: temp test for bootstrap
-		pc = 0x0100;//0x0100;
+		pc = 0x0000;//0x0100;
 		sp = 0xFFFE;
 		
 		//initial data loaded into RAM/registers
 		
-		registers[INDEX_A] = 0x01;	registers[INDEX_F] = 0xB0;
-		registers[INDEX_B] = 0x00;	registers[INDEX_C] = 0x13;
-		registers[INDEX_D] = 0x00;	registers[INDEX_E] = 0xD8;
-		registers[INDEX_H] = 0x01;	registers[INDEX_L] = 0x4D;
-		
-		gameBoy.memory.writeByte(0xFF05, (char)0x00, HardwareType.CPU);	//TIMA
-		gameBoy.memory.writeByte(0xFF06, (char)0x00, HardwareType.CPU);	//TMA
-		gameBoy.memory.writeByte(0xFF07, (char)0x00, HardwareType.CPU);	//TAC
-		gameBoy.memory.writeByte(0xFF10, (char)0x80, HardwareType.CPU);	//NR10
-		gameBoy.memory.writeByte(0xFF11, (char)0xBF, HardwareType.CPU);	//NR11
-		gameBoy.memory.writeByte(0xFF12, (char)0xF3, HardwareType.CPU);	//NR12
-		gameBoy.memory.writeByte(0xFF14, (char)0xBF, HardwareType.CPU);	//NR14
-		gameBoy.memory.writeByte(0xFF16, (char)0x3F, HardwareType.CPU);	//NR21
-		gameBoy.memory.writeByte(0xFF17, (char)0x00, HardwareType.CPU);	//NR22
-		gameBoy.memory.writeByte(0xFF19, (char)0xBF, HardwareType.CPU);	//NR24
-		gameBoy.memory.writeByte(0xFF1A, (char)0x7F, HardwareType.CPU);	//NR30
-		gameBoy.memory.writeByte(0xFF1B, (char)0xFF, HardwareType.CPU);	//NR31
-		gameBoy.memory.writeByte(0xFF1C, (char)0x9F, HardwareType.CPU);	//NR32
-		gameBoy.memory.writeByte(0xFF1E, (char)0xBF, HardwareType.CPU);	//NR33
-		gameBoy.memory.writeByte(0xFF20, (char)0xFF, HardwareType.CPU);	//NR41
-		gameBoy.memory.writeByte(0xFF21, (char)0x00, HardwareType.CPU);	//NR42
-		gameBoy.memory.writeByte(0xFF22, (char)0x00, HardwareType.CPU);	//NR43
-		gameBoy.memory.writeByte(0xFF23, (char)0xBF, HardwareType.CPU);	//NR30
-		gameBoy.memory.writeByte(0xFF24, (char)0x77, HardwareType.CPU);	//NR50
-		gameBoy.memory.writeByte(0xFF25, (char)0xF3, HardwareType.CPU);	//NR51
-		gameBoy.memory.writeByte(0xFF26, (char)0xF1, HardwareType.CPU); //NR52, $F0 for super gameboy
-		gameBoy.memory.writeByte(0xFF40, (char)0x91, HardwareType.CPU);	//LCDC
-		gameBoy.memory.writeByte(0xFF42, (char)0x00, HardwareType.CPU);	//SCY
-		gameBoy.memory.writeByte(0xFF43, (char)0x00, HardwareType.CPU);	//SCX
-		gameBoy.memory.writeByte(0xFF45, (char)0x00, HardwareType.CPU);	//LYC
-		gameBoy.memory.writeByte(0xFF47, (char)0xFC, HardwareType.CPU);	//BGP
-		gameBoy.memory.writeByte(0xFF48, (char)0xFF, HardwareType.CPU);	//OBPO
-		gameBoy.memory.writeByte(0xFF49, (char)0xFF, HardwareType.CPU);	//OBP1
-		gameBoy.memory.writeByte(0xFF4A, (char)0x00, HardwareType.CPU);	//WY
-		gameBoy.memory.writeByte(0xFF4B, (char)0x00, HardwareType.CPU);	//WX
-		gameBoy.memory.writeByte(0xFFFF, (char)0x00, HardwareType.CPU);	//IE
+//		registers[INDEX_A] = 0x01;	registers[INDEX_F] = 0xB0;
+//		registers[INDEX_B] = 0x00;	registers[INDEX_C] = 0x13;
+//		registers[INDEX_D] = 0x00;	registers[INDEX_E] = 0xD8;
+//		registers[INDEX_H] = 0x01;	registers[INDEX_L] = 0x4D;
+//		
+//		gameBoy.memory.writeByte(0xFF05, (char)0x00, HardwareType.CPU);	//TIMA
+//		gameBoy.memory.writeByte(0xFF06, (char)0x00, HardwareType.CPU);	//TMA
+//		gameBoy.memory.writeByte(0xFF07, (char)0x00, HardwareType.CPU);	//TAC
+//		gameBoy.memory.writeByte(0xFF10, (char)0x80, HardwareType.CPU);	//NR10
+//		gameBoy.memory.writeByte(0xFF11, (char)0xBF, HardwareType.CPU);	//NR11
+//		gameBoy.memory.writeByte(0xFF12, (char)0xF3, HardwareType.CPU);	//NR12
+//		gameBoy.memory.writeByte(0xFF14, (char)0xBF, HardwareType.CPU);	//NR14
+//		gameBoy.memory.writeByte(0xFF16, (char)0x3F, HardwareType.CPU);	//NR21
+//		gameBoy.memory.writeByte(0xFF17, (char)0x00, HardwareType.CPU);	//NR22
+//		gameBoy.memory.writeByte(0xFF19, (char)0xBF, HardwareType.CPU);	//NR24
+//		gameBoy.memory.writeByte(0xFF1A, (char)0x7F, HardwareType.CPU);	//NR30
+//		gameBoy.memory.writeByte(0xFF1B, (char)0xFF, HardwareType.CPU);	//NR31
+//		gameBoy.memory.writeByte(0xFF1C, (char)0x9F, HardwareType.CPU);	//NR32
+//		gameBoy.memory.writeByte(0xFF1E, (char)0xBF, HardwareType.CPU);	//NR33
+//		gameBoy.memory.writeByte(0xFF20, (char)0xFF, HardwareType.CPU);	//NR41
+//		gameBoy.memory.writeByte(0xFF21, (char)0x00, HardwareType.CPU);	//NR42
+//		gameBoy.memory.writeByte(0xFF22, (char)0x00, HardwareType.CPU);	//NR43
+//		gameBoy.memory.writeByte(0xFF23, (char)0xBF, HardwareType.CPU);	//NR30
+//		gameBoy.memory.writeByte(0xFF24, (char)0x77, HardwareType.CPU);	//NR50
+//		gameBoy.memory.writeByte(0xFF25, (char)0xF3, HardwareType.CPU);	//NR51
+//		gameBoy.memory.writeByte(0xFF26, (char)0xF1, HardwareType.CPU); //NR52, $F0 for super gameboy
+//		gameBoy.memory.writeByte(0xFF40, (char)0x91, HardwareType.CPU);	//LCDC
+//		gameBoy.memory.writeByte(0xFF42, (char)0x00, HardwareType.CPU);	//SCY
+//		gameBoy.memory.writeByte(0xFF43, (char)0x00, HardwareType.CPU);	//SCX
+//		gameBoy.memory.writeByte(0xFF45, (char)0x00, HardwareType.CPU);	//LYC
+//		gameBoy.memory.writeByte(0xFF47, (char)0xFC, HardwareType.CPU);	//BGP
+//		gameBoy.memory.writeByte(0xFF48, (char)0xFF, HardwareType.CPU);	//OBPO
+//		gameBoy.memory.writeByte(0xFF49, (char)0xFF, HardwareType.CPU);	//OBP1
+//		gameBoy.memory.writeByte(0xFF4A, (char)0x00, HardwareType.CPU);	//WY
+//		gameBoy.memory.writeByte(0xFF4B, (char)0x00, HardwareType.CPU);	//WX
+//		gameBoy.memory.writeByte(0xFFFF, (char)0x00, HardwareType.CPU);	//IE
 		
 	}
 	
