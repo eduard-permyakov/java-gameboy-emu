@@ -149,7 +149,7 @@ public class Memory {
 			return;
 		}
 		
-		memory[address] = data;
+		memory[address] = data;			
 		
 		//echo the 8kb internal RAM
 		if(address >= 0xC000 && address <  0xE000){

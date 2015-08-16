@@ -143,6 +143,8 @@ public class LCDController extends Thread{
 	//TODO: do none of this if the LCD is disabled still
 	public void run(){
 		
+//		System.out.println("LY: " + Integer.toString(y));
+		
 //		if(this.state == LCDControllerState.LCD_STATE_VBLANK)
 //			System.out.println("---> VBLANK" +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
 //		else
@@ -169,13 +171,13 @@ public class LCDController extends Thread{
 //			} catch (InterruptedException e) {
 //				e.printStackTrace();
 //			}
-			y++;
 //			if(y > 143)
 //				y = 0;
 			
 			makeLinePixelArray();
 			gameBoy.projectRow(y, linePixelArray);
-						
+			
+			y++;
 			
 			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
@@ -321,11 +323,12 @@ public class LCDController extends Thread{
 		for(int i = 0; i < 32; i++){
 
 			char[] sprite = spritesArray[bgDataArray[bgTileBaseIndex+i]];
+			
 			int rowBitSequence = ((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
 			
-			if(rowBitSequence != 0){
-				String.format("%16s", Integer.toBinaryString(rowBitSequence)).replace(' ', '0');
-			}
+//			if(rowBitSequence != 0){
+//				String.format("%16s", Integer.toBinaryString(rowBitSequence)).replace(' ', '0');
+//			}
 
 			for(int j = 0; j < 8; j++){
 				final char color = (char)((rowBitSequence >> (15-j)) & 0b11);

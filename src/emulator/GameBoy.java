@@ -7,7 +7,7 @@ import emulator.LCDController;
 
 public class GameBoy extends Thread{
 	
-	int old_y;
+	int old_y = 9; //shouldn't be 0 at start
 	boolean reset = false;
 	
 	public boolean lcdControllerIsIdle;
@@ -106,23 +106,23 @@ public class GameBoy extends Thread{
 		
 		if(clockCycles%LCDController.TOTAL_REFRESH_CYCLES >= LCDController.TOTAL_PRE_VBLANK_CYCLES){
 			
+			//System.out.println("vblank cycles: " + (clockCycles%LCDController.TOTAL_REFRESH_CYCLES));
 			newState = LCDControllerState.LCD_STATE_VBLANK;
 			lcd.setLCDState(newState);
 
-			if((clockCycles%LCDController.TOTAL_REFRESH_CYCLES - LCDController.TOTAL_PRE_VBLANK_CYCLES)/456 > old_y){
-				//System.out.println("old_y: " + old_y);
+			int currentCycles = clockCycles%LCDController.TOTAL_REFRESH_CYCLES;
+			if((currentCycles - LCDController.TOTAL_PRE_VBLANK_CYCLES)/LCDController.HORIZONTAL_LINE_CYCLES != old_y){
+
 				if(lcdControllerIsIdle){
 					lcdControllerIsIdle = false;
 					lcd.run();
 				}else{
 					cpu.setState(CPUState.CPU_STATE_WAITING);
-
 				}
 			}
-			old_y = ((clockCycles%LCDController.TOTAL_REFRESH_CYCLES - LCDController.TOTAL_PRE_VBLANK_CYCLES))/456;
+			
+			old_y = ((currentCycles - LCDController.TOTAL_PRE_VBLANK_CYCLES))/456;
 			reset = false;
-
-
 			
 			return;
 			
@@ -147,10 +147,8 @@ public class GameBoy extends Thread{
 			}
 			
 		}
-		
-		old_y = 0;
-		
-		if(lcd.getLCDState() != newState) {
+				
+		if(prevState != newState) {
 			
 			if(lcdControllerIsIdle){
 				lcd.setLCDState(newState);
