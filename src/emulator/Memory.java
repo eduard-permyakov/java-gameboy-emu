@@ -54,6 +54,7 @@ public class Memory {
 
 		//mbc1
 		mbc1Banks = new char[32][0x4000];
+		currentRomBankAddr = 0;
 		mbc1Mode = MBC1MaxMemMode.SixteenEightMode; //default
 		mbcRAM1enabled = false; //default
 	}
@@ -96,7 +97,7 @@ public class Memory {
 
 				}else if(address >= 0x2000 && address <= 0x3FFF){
 					
-					System.out.println("will select an appropriate ROM bank at 4000-7FFF");
+					System.out.println("Selecting rom bank address:" + (data & 0x1F));
 					// will select an appropriate ROM bank at 4000-7FFF
 					char bankAddr = (char) (data & 0x1F);
 					if(bankAddr == 0x00)	bankAddr = 0x01;
@@ -109,6 +110,7 @@ public class Memory {
 					
 					// will select an appropriate RAM bank at A000-C000
 					if(this.mbc1Mode == MBC1MaxMemMode.FourThirtyTwoMode){
+						System.out.println("Current rom bank addr: " + (data & 0b11));
 						this.currentRomBankAddr = (char)(data & 0b11);
 					}
 					
@@ -117,9 +119,11 @@ public class Memory {
 						char twoBits = (char)(data & 0b11);
 						this.currentRomBankAddr &= ~0b110000;		//double check this
 						this.currentRomBankAddr |= (twoBits << 4);
+						System.out.println("Current rom bank addr: " + currentRomBankAddr);
 					}
 					
 				}else if(address >= 0x6000 && address <= 0x7FFF){
+					System.out.println("Selecting mode: " + (data & 0x1));
 					switch(data & 0x1){
 					case 0: this.mbc1Mode = MBC1MaxMemMode.SixteenEightMode;System.out.println("16-8 mode");	break;
 					case 1: this.mbc1Mode = MBC1MaxMemMode.FourThirtyTwoMode;System.out.println("4-32 mode");	break;
@@ -297,8 +301,8 @@ public class Memory {
 		switch(this.memoryBankingMode){
 		case 0: break;
 		case 1: {
-			if(mbc1Mode == MBC1MaxMemMode.FourThirtyTwoMode){
-				return (char)(mbc1Banks[currentRomBankAddr][address - mbc1Offset] & 0xFF);
+			if((address >= 0x4000 && address < 0x8000) && currentRomBankAddr > 0){
+				return (char)(mbc1Banks[currentRomBankAddr][address - (currentRomBankAddr * mbc1Offset)] & 0xFF);
 			}
 			break;
 		}

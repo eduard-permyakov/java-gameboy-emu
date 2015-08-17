@@ -121,7 +121,7 @@ public class CPU extends Thread{
 			System.out.print("");
 		}
 		
-		if(pc == 0x858){
+		if(pc == 0x655){
 			System.out.print("");
 		}
 		
@@ -4622,6 +4622,94 @@ public class CPU extends Thread{
 			
 			M += 2;
 			T += 8;
+			
+			break;
+		}
+		
+		case 0xC2:{
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & ZERO_BIT) == 0){
+				char addMS = gameBoy.memory.readByte(++pc);
+				char addLS = gameBoy.memory.readByte(++pc);
+				
+				pc = (char)((addMS << 8) | addLS);
+				
+				T += 1;
+				M += 4;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xCA:{
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & ZERO_BIT) > 0){
+				char addMS = gameBoy.memory.readByte(++pc);
+				char addLS = gameBoy.memory.readByte(++pc);
+				
+				pc = (char)((addMS << 8) | addLS);
+				
+				T += 1;
+				M += 4;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xD2:{
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & CARRY_BIT) == 0){
+				char addMS = gameBoy.memory.readByte(++pc);
+				char addLS = gameBoy.memory.readByte(++pc);
+				
+				pc = (char)((addMS << 8) | addLS);
+				
+				T += 1;
+				M += 4;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
+				return;
+			}
+			
+			break;
+		}
+		
+		case 0xDA:{
+			M += 3;
+			T += 12;
+			
+			if((registers[INDEX_F] & CARRY_BIT) > 0){
+				char addMS = gameBoy.memory.readByte(++pc);
+				char addLS = gameBoy.memory.readByte(++pc);
+				
+				pc = (char)((addMS << 8) | addLS);
+				
+				T += 1;
+				M += 4;
+				
+				gameBoy.setMachineCycles(M);
+				gameBoy.setClockCycles(T);
+				
+				return;
+			}
 			
 			break;
 		}
