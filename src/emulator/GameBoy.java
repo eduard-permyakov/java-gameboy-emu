@@ -162,5 +162,13 @@ public class GameBoy extends Thread{
 		}
 
 	}
+	
+	public void enableLCD(){
+		lcd.enableLCD();
+	}
+	
+	public void disableLCD(){
+		lcd.disableLCD();
+	}
 
 }

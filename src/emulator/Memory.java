@@ -267,6 +267,15 @@ public class Memory {
 			}
 			gameBoy.setColorPalette(PaletteType.PaletteTypeObject1, colorsArray);
 		}
+		
+		//LCD control register
+		if(address == LCDController.LCDC_REGISTER_ADDR){
+			if((data & 0x80) == 0){//enable/disable LCD
+				gameBoy.disableLCD();
+			}else{
+				gameBoy.enableLCD();
+			}
+		}
 	}
 	
 	public void setMask(int address,char mask, boolean bit, HardwareType type){
