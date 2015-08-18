@@ -117,11 +117,11 @@ public class CPU extends Thread{
 //			System.out.print("");
 //		}
 		
-		if(pc == 0x2B7){
+		if(pc == 0x850){
 			System.out.print("");
 		}
 		
-		if(pc == 0x655){
+		if(pc == 0xC2EF){
 			System.out.print("");
 		}
 		
@@ -1141,7 +1141,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x47: {
-			registers[INDEX_A] = registers[INDEX_A];
+			registers[INDEX_B] = registers[INDEX_A];
 			
 			M += 1;
 			T += 4;
@@ -1205,7 +1205,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0x12: {
-			char address = (char)((registers[INDEX_E] << 8) | registers[INDEX_E]);
+			char address = (char)((registers[INDEX_D] << 8) | registers[INDEX_E]);
 			gameBoy.memory.writeByte(address, registers[INDEX_A], HardwareType.CPU);
 			
 			M += 2;
@@ -1401,7 +1401,7 @@ public class CPU extends Thread{
 			char immediate = gameBoy.memory.readByte(++pc);
 			char address = (char)(sp + immediate);
 			
-			registers[INDEX_H] = (char)(address << 8);
+			registers[INDEX_H] = (char)(address >> 8);
 			registers[INDEX_L] = (char)(address & 0xFF);
 			
 			//reset Z flag
@@ -1409,12 +1409,12 @@ public class CPU extends Thread{
 			//reset N flag
 			registers[INDEX_F] &= ~OP_BIT;
 			//set H
-			if((immediate + (sp & 0xF)) > 0xF)
+			if((immediate + (sp & 0xFFF)) > 0xFFF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			//set C
-			if((int)(immediate + (sp)) > 0xFF)
+			if((int)(immediate + (sp)) > 0xFFFF)
 				registers[INDEX_F] |= CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
@@ -1522,9 +1522,9 @@ public class CPU extends Thread{
 		
 		case 0xD1: {
 			
-			registers[INDEX_E] = gameBoy.memory.readByte(sp);
-			sp ++;
 			registers[INDEX_D] = gameBoy.memory.readByte(sp);
+			sp ++;
+			registers[INDEX_E] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -3609,7 +3609,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			if((value1&0xFF + value2&0xFF) > 0xFF)
+			if(((value1&0xFFF) + (value2&0xFFF)) > 0xFFF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -3636,7 +3636,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			if((value1&0xFF + value2&0xFF) > 0xFF)
+			if(((value1&0xFFF) + (value2&0xFFF)) > 0x3FF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -3662,7 +3662,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			if((value1&0xFF + value2&0xFF) > 0xFF)
+			if(((value1&0xFFF) + (value2&0xFFF)) > 0xFFF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -3688,7 +3688,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			if((value1&0xFF + value2&0xFF) > 0xFF)
+			if(((value1&0xFFF) + (value2&0xFFF)) > 0xFFF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -4499,7 +4499,7 @@ public class CPU extends Thread{
 			T += 8;
 			
 			byte signedImmediate = (byte)(gameBoy.memory.readByte(++pc));
-			if((registers[INDEX_F] & ZERO_BIT) == 0){
+			if((registers[INDEX_F] & CARRY_BIT) == 0){
 				pc += 1 + signedImmediate;	//mb we need a sketchy + 1?
 				
 				M += 1;
@@ -4630,9 +4630,10 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
+			char addMS = gameBoy.memory.readByte(++pc);
+			char addLS = gameBoy.memory.readByte(++pc);
+			
 			if((registers[INDEX_F] & ZERO_BIT) == 0){
-				char addMS = gameBoy.memory.readByte(++pc);
-				char addLS = gameBoy.memory.readByte(++pc);
 				
 				pc = (char)((addMS << 8) | addLS);
 				
@@ -4652,9 +4653,10 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
+			char addMS = gameBoy.memory.readByte(++pc);
+			char addLS = gameBoy.memory.readByte(++pc);
+			
 			if((registers[INDEX_F] & ZERO_BIT) > 0){
-				char addMS = gameBoy.memory.readByte(++pc);
-				char addLS = gameBoy.memory.readByte(++pc);
 				
 				pc = (char)((addMS << 8) | addLS);
 				
@@ -4674,9 +4676,10 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
+			char addMS = gameBoy.memory.readByte(++pc);
+			char addLS = gameBoy.memory.readByte(++pc);
+			
 			if((registers[INDEX_F] & CARRY_BIT) == 0){
-				char addMS = gameBoy.memory.readByte(++pc);
-				char addLS = gameBoy.memory.readByte(++pc);
 				
 				pc = (char)((addMS << 8) | addLS);
 				
@@ -4696,9 +4699,10 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
+			char addMS = gameBoy.memory.readByte(++pc);
+			char addLS = gameBoy.memory.readByte(++pc);
+			
 			if((registers[INDEX_F] & CARRY_BIT) > 0){
-				char addMS = gameBoy.memory.readByte(++pc);
-				char addLS = gameBoy.memory.readByte(++pc);
 				
 				pc = (char)((addMS << 8) | addLS);
 				
