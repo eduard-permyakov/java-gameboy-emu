@@ -110,18 +110,11 @@ public class CPU extends Thread{
 //			}
 //		}
 		
-		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+//		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
+//		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
-//		if(pc == 0x745 && registers[INDEX_C] == 0xA5){
-//			System.out.print("");
-//		}
 		
-		if(pc == 0x850){
-			System.out.print("");
-		}
-		
-		if(pc == 0xC2EF){
+		if(pc == 0xC36C){
 			System.out.print("");
 		}
 		
@@ -1498,7 +1491,8 @@ public class CPU extends Thread{
 			
 			registers[INDEX_A] = gameBoy.memory.readByte(sp);
 			sp ++;
-			registers[INDEX_F] = gameBoy.memory.readByte(sp);
+			//Least significant nibble is always 0 in reg. F
+			registers[INDEX_F] = (char)(gameBoy.memory.readByte(sp) & 0xF0);
 			sp ++;
 			
 			M += 4;
@@ -2099,7 +2093,7 @@ public class CPU extends Thread{
 		
 		case 0xCE: {
 			char immediate = gameBoy.memory.readByte(++pc); 
-			int result = (registers[INDEX_A] + immediate + ((registers[INDEX_F] & ZERO_BIT) >> 4));
+			int result = (registers[INDEX_A] + immediate + 1 + ((registers[INDEX_F] & ZERO_BIT) >> 4));
 			
 			//set z flag
 			if((result&0xFF) == 0)
@@ -2375,7 +2369,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
-			registers[INDEX_C] = (char)result;
+			registers[INDEX_C] = (char)(result & 0xFF);
 			
 			break;
 		}
@@ -4718,6 +4712,57 @@ public class CPU extends Thread{
 			break;
 		}
 		
+		case 0x07:{
+			char rotatedBit = (char)(registers[INDEX_A] & 80);
+			char oldCarry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4); 
+			registers[INDEX_A] = (char) (oldCarry | (registers[INDEX_A] << 1));
+			
+			if(rotatedBit == 0)				resetFlags(CARRY_BIT);
+			else							setFlags(CARRY_BIT);
+			
+			if(registers[INDEX_A] == 0)		setFlags(ZERO_BIT);
+			else							resetFlags(ZERO_BIT);
+			
+			resetFlags(OP_BIT | HALF_CARRY_BIT);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x27:{
+			
+			if((registers[INDEX_F] & OP_BIT) == 0){
+				if(flagsAreSet(HALF_CARRY_BIT) || (registers[INDEX_A]&0xF) > 0x9)
+					registers[INDEX_A] += 0x06;
+				
+				if(flagsAreSet(CARRY_BIT) || registers[INDEX_A] > 0x9F)
+					registers[INDEX_A] += 0x60;
+			}else{
+				if(flagsAreSet(HALF_CARRY_BIT))
+					registers[INDEX_A] = (char)((registers[INDEX_A] - 0x06) & 0xFF);
+				
+				if(flagsAreSet(CARRY_BIT))
+					registers[INDEX_A] -= 0x60;
+			}
+			
+			resetFlags(HALF_CARRY_BIT | ZERO_BIT);
+			
+			if((registers[INDEX_A] & 0x100) > 0)
+				setFlags(CARRY_BIT);
+			
+			registers[INDEX_A] &= 0xFF;
+			
+			if(registers[INDEX_A] == 0)
+				setFlags(ZERO_BIT);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
 			default:{
 				System.err.println("Unsupported Opcode!");
 				System.exit(0);
@@ -4844,6 +4889,10 @@ public class CPU extends Thread{
 	
 	private final void resetFlags(int mask){
 		registers[INDEX_F] &= ~mask;
+	}
+	
+	private boolean flagsAreSet(int mask){
+		return (registers[INDEX_F] & mask) != 0;
 	}
 	
 	

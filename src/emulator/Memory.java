@@ -51,10 +51,13 @@ public class Memory {
 		
 		//set all lines of the joypad register high initially
 		memory[InputHandler.JOYPAD_ADDR] = (char)0xFF;
+		
+		//default
+		memoryBankingMode = 0;
 
 		//mbc1
 		mbc1Banks = new char[32][0x4000];
-		currentRomBankAddr = 0;
+		currentRomBankAddr = 1; //sketchy
 		mbc1Mode = MBC1MaxMemMode.SixteenEightMode; //default
 		mbcRAM1enabled = false; //default
 	}
@@ -298,11 +301,12 @@ public class Memory {
 	}
 
 	public char readByte(int address){
+
 		switch(this.memoryBankingMode){
 		case 0: break;
 		case 1: {
 			if((address >= 0x4000 && address < 0x8000) && currentRomBankAddr > 0){
-				return (char)(mbc1Banks[currentRomBankAddr][address - (currentRomBankAddr * mbc1Offset)] & 0xFF);
+				return (char)(mbc1Banks[currentRomBankAddr - 1][address % mbc1Offset] & 0xFF);
 			}
 			break;
 		}
