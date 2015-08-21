@@ -57,6 +57,15 @@ public class GameBoy extends Thread{
 //		}
 //	}
 	
+	public void interruptCPU(Interrupt type){
+		if(cpu.interruptsEnabled())
+			cpu.interrupt(type);
+	}
+	
+	public void resumeCPUExecution(){
+		cpu.resumeExecution();
+	}
+	
 	public synchronized void LCDControllerDidNotifyOfStateCompletion(){
 		lcdControllerIsIdle = true;
 		notifyAll();

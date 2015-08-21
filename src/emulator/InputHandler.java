@@ -25,6 +25,7 @@ public class InputHandler implements KeyListener {
 	@Override
 	public void keyPressed(KeyEvent event) {
 		updateJoypadRegister(event);
+		gameBoy.resumeCPUExecution();
 	}
 
 	@Override
@@ -87,10 +88,15 @@ public class InputHandler implements KeyListener {
 			default:			return;
 			}
 		}
+		raiseJoypadInterrupt();
 	}
 	
 	private boolean isKeyLow(KeyEvent event){
 		return event.getID() == KeyEvent.KEY_RELEASED;
+	}
+	
+	private void raiseJoypadInterrupt(){
+		gameBoy.interruptCPU(Interrupt.InterruptJoypad);
 	}
 
 }

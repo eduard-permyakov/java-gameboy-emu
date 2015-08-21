@@ -286,9 +286,7 @@ public class Memory {
 	}
 	
 	public void setMask(int address,char mask, boolean bit, HardwareType type){
-		if(address == InputHandler.JOYPAD_ADDR){
-			System.out.println("writing!!!!");
-		}
+
 		if(bit == true){
 			memory[address] |= (mask & 0xFF);
 		}else{

@@ -19,13 +19,14 @@ public class Main{
 //		System.out.println(Integer.toHexString(c));
 		
 		romLoader = new RomLoader(gameBoy);
+//		romLoader.loadROM("./TestROMs/Super Mario Land (World).gb");
 //		romLoader.loadROM("./TestROMs/cpu_instrs.gb");
-//		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
+		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
 //		romLoader.loadROM("./TestROMs/Tetris.gb");
 //		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
 		
 		//Groups of instuctions testing
-		romLoader.loadROM("./TestROMs/individual/01-special.gb");
+//		romLoader.loadROM("./TestROMs/individual/01-special.gb");
 //		romLoader.loadROM("./TestROMs/individual/02-interrupts.gb");
 //		romLoader.loadROM("./TestROMs/individual/03-op sp,hl.gb");
 //		romLoader.loadROM("./TestROMs/individual/04-op r,imm.gb");

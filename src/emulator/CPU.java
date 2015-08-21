@@ -6,7 +6,15 @@ import java.util.concurrent.TimeUnit;
 
 enum CPUState{
 	CPU_STATE_EXECUTING,
-	CPU_STATE_WAITING
+	CPU_STATE_WAITING,
+}
+
+enum Interrupt{
+	InterruptVBlank,
+	InterruptLCDC,
+	InterruptTimerOverflow,
+	InterruptSerialIOTransferComplete,
+	InterruptJoypad
 }
 
 public class CPU extends Thread{
@@ -48,6 +56,14 @@ public class CPU extends Thread{
 		
 	private char currentOpcode;
 	
+	private boolean IME = true;
+	private Interrupt currInterrupt = null;
+	
+	private int cntUntinEnableInterrupt = -1;
+	private int cntUntilDisableInterrupt = -1;
+	
+	private boolean isStopped = false;
+	
 	public CPU(GameBoy gameBoy, CyclicBarrier barrier) {
 		this.gameBoy = gameBoy;
 		this.barrier = barrier;
@@ -56,21 +72,43 @@ public class CPU extends Thread{
 //		init();
 	}
 	
+	public synchronized boolean interruptsEnabled(){
+		return IME;
+	}
+	
+	
+	public synchronized void interrupt(Interrupt type){
+		System.out.println("--- interrupted ---");
+		currInterrupt = type;
+	}
+	
 	public void run(){
 		while(true){
+			
 			
 			long startTime = System.nanoTime();
 			
 			if(this.state == CPUState.CPU_STATE_EXECUTING){
-				fetchNextOpcode();
-				decodeAndExecuteOpcode();
-			}else{	
+				
+				if(isStopped){
+					execStoppedState();
+				}else{
+					
+					updateInterruptStates();
+					
+					if(IME)
+						serviceInterrrupts();
+					fetchNextOpcode();
+					decodeAndExecuteOpcode();
+				}
+				
+
+			}else{
 				try {
 					barrier.await();
 				} catch (InterruptedException | BrokenBarrierException e) {
 					e.printStackTrace();
 				}
-
 			}
 //			System.out.println("CPU State: "+this.state);
 			
@@ -94,13 +132,44 @@ public class CPU extends Thread{
 		this.state = state;
 	}
 	
-	public void fetchNextOpcode(){
+	public void resumeExecution(){
+		this.isStopped = false;
+	}
+	
+	private void serviceInterrrupts(){
+		this.isStopped = false;
+		System.out.println("service interrupts");
+	}
+	
+	private void execStoppedState(){
+		M += 1;
+		T += 4;
+		
+		gameBoy.setMachineCycles(M);
+		gameBoy.setClockCycles(T);
+	}
+	
+	private void updateInterruptStates(){
+		if(cntUntinEnableInterrupt >= 0){
+			cntUntinEnableInterrupt--;
+			if(cntUntinEnableInterrupt == -1)
+				IME = true; System.out.println("enable interrupts");
+		}
+		
+		if(cntUntilDisableInterrupt >= 0){
+			cntUntilDisableInterrupt--;
+			if(cntUntilDisableInterrupt == -1)
+				IME = false; System.out.println("disable interrupts");
+		}
+	}
+	
+	private void fetchNextOpcode(){
 		
 		currentOpcode = gameBoy.memory.readByte(pc);
 		
 	}
 	
-	public void decodeAndExecuteOpcode(){
+	private void decodeAndExecuteOpcode(){
 		
 //		if(pc == 0x100){
 //			for(int i = 0; i < gameBoy.memory.length; i++){
@@ -112,11 +181,6 @@ public class CPU extends Thread{
 		
 //		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 //		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
-		
-		
-		if(pc == 0xC36C){
-			System.out.print("");
-		}
 		
 		
 		switch(currentOpcode){
@@ -484,6 +548,49 @@ public class CPU extends Thread{
 			case 0x1E:{
 				char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
 				rotateMemRightThroughCarry(address);
+				break;
+			}
+			
+			//rotate left through carry
+			
+			case 0x07:{
+				rotateRegLeftThroughCarry(INDEX_A);
+				break;
+			}
+			
+			case 0x00:{
+				rotateRegLeftThroughCarry(INDEX_B);
+				break;
+			}
+			
+			case 0x01:{
+				rotateRegLeftThroughCarry(INDEX_C);
+				break;
+			}
+			
+			case 0x02:{
+				rotateRegLeftThroughCarry(INDEX_D);
+				break;
+			}
+			
+			case 0x03:{
+				rotateRegLeftThroughCarry(INDEX_E);
+				break;
+			}
+			
+			case 0x04:{
+				rotateRegLeftThroughCarry(INDEX_H);
+				break;
+			}
+			
+			case 0x05:{
+				rotateRegLeftThroughCarry(INDEX_L);
+				break;
+			}
+			
+			case 0x06:{
+				char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+				rotateMemLeftThroughCarry(address);
 				break;
 			}
 			
@@ -1391,8 +1498,8 @@ public class CPU extends Thread{
 		}
 		
 		case 0xF8: {
-			char immediate = gameBoy.memory.readByte(++pc);
-			char address = (char)(sp + immediate);
+			byte signedImmediate = (byte)(gameBoy.memory.readByte(++pc));
+			char address = (char)((char)sp + signedImmediate);
 			
 			registers[INDEX_H] = (char)(address >> 8);
 			registers[INDEX_L] = (char)(address & 0xFF);
@@ -1402,12 +1509,12 @@ public class CPU extends Thread{
 			//reset N flag
 			registers[INDEX_F] &= ~OP_BIT;
 			//set H
-			if((immediate + (sp & 0xFFF)) > 0xFFF)
+			if((signedImmediate + (sp & 0xF)) > 0xF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			//set C
-			if((int)(immediate + (sp)) > 0xFFFF)
+			if((int)(signedImmediate + sp) > 0xFFFF)
 				registers[INDEX_F] |= CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
@@ -2456,8 +2563,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0xF3: {
-			//TODO:
-			System.out.println("disable interrupts after the instruction after this one is executed");
+			cntUntilDisableInterrupt = 1;
 			
 			M += 1;
 			T += 4;
@@ -2997,6 +3103,8 @@ public class CPU extends Thread{
 		case 0x15: {
 			
 			char result = (char) (registers[INDEX_D]-1);
+			if(registers[INDEX_D] == 0x00)
+				result = 0xFF; //underflow
 			
 			if(result == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -3264,7 +3372,7 @@ public class CPU extends Thread{
 		}
 		
 		case 0xFB:{
-			System.out.println("Enable interrupts on the instruction after this one is executed");
+			cntUntinEnableInterrupt = 1;
 			
 			M += 1;
 			T += 4;
@@ -3711,19 +3819,22 @@ public class CPU extends Thread{
 			
 			byte signedImmediate = (byte)(gameBoy.memory.readByte(++pc));
 			
-			sp += signedImmediate;
+			char result = (char)((char)sp + signedImmediate);
+
 			
 			registers[INDEX_F] &= ~(ZERO_BIT | OP_BIT);
 			
-//			if(sp > 0xFFFF)
-//				registers[INDEX_F] |= CARRY_BIT;
-//			else
-//				registers[INDEX_F] &= ~CARRY_BIT;
-//			
-//			if((sp&0xFF + signedImmediate&0xFF) > 0xFF)
-//				registers[INDEX_F] |= HALF_CARRY_BIT;
-//			else
-//				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			if((sp + signedImmediate) > 0xFFFF)
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			if(((sp&0xF) + signedImmediate) > 0xF)
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			sp = result;
 			
 			M += 4;
 			T += 16;
@@ -4469,6 +4580,9 @@ public class CPU extends Thread{
 			
 			pc = (char)((retAddMS << 8) | retAddLS);
 			
+			IME = true;
+			System.out.println("enable itnerrupts");
+			
 			M += 2;
 			T += 8;
 			
@@ -4763,8 +4877,92 @@ public class CPU extends Thread{
 			break;
 		}
 		
+		case 0xDE:{
+			char immediate = gameBoy.memory.readByte(++pc);
+			char carry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4);
+			char result = (char)(registers[INDEX_A] - (immediate + carry));
+			
+			//set z flag
+			if(result == 0)
+				registers[INDEX_F] |= ZERO_BIT;
+			else
+				registers[INDEX_F] &= ~ZERO_BIT;
+			
+			//set n flag
+			registers[INDEX_F] |= OP_BIT;
+			
+			//set h flag
+			if((registers[INDEX_A] &0xF) < (immediate + carry &0xF))
+				registers[INDEX_F] |= HALF_CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+			
+			//set c flag
+			if(registers[INDEX_A] < (immediate + carry))
+				registers[INDEX_F] |= CARRY_BIT;
+			else
+				registers[INDEX_F] &= ~CARRY_BIT;
+			
+			registers[INDEX_A] = (char)(result & 0xFF);
+			
+			M += 2;
+			T += 8;
+			
+			break;	
+		}
+		
+		case 0x1B:{
+			
+			char value = (char)((registers[INDEX_D] << 8) | registers[INDEX_E]);
+			value--;
+			
+			registers[INDEX_D] = (char)(value >> 8);
+			registers[INDEX_E] = (char)(value & 0xFF);
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0x37:{
+			
+			registers[INDEX_F] |= CARRY_BIT;
+			registers[INDEX_F] &= ~(OP_BIT | HALF_CARRY_BIT);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x2B:{
+			
+			char value = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
+			value--;
+			
+			registers[INDEX_H] = (char)(value >> 8);
+			registers[INDEX_L] = (char)(value & 0xFF);
+			
+			M += 2;
+			T += 8;
+			
+			break;
+		}
+		
+		case 0x10:{
+			pc++;
+			
+			this.isStopped = true;
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
 			default:{
-				System.err.println("Unsupported Opcode!");
+				System.err.println("Unsupported Opcode: " +Integer.toHexString(currentOpcode).toUpperCase());
 				System.exit(0);
 			}
 
@@ -4858,6 +5056,47 @@ public class CPU extends Thread{
 		
 		M += 2;
 		T += 8;
+			
+	}
+	
+	private final void rotateRegLeftThroughCarry(int regIndex){
+		
+		char rotatedBit = (char)(registers[regIndex] >> 7);
+		char oldCarry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4); 
+		registers[regIndex] = (char) (oldCarry | (registers[regIndex] << 1));
+		
+		if(rotatedBit == 0)				resetFlags(CARRY_BIT);
+		else							setFlags(CARRY_BIT);
+		
+		if(registers[regIndex] == 0)	setFlags(ZERO_BIT);
+		else							resetFlags(ZERO_BIT);
+		
+		resetFlags(OP_BIT | HALF_CARRY_BIT);
+		
+		M += 2;
+		T += 8;
+			
+	}
+	
+	private final void rotateMemLeftThroughCarry(int address){
+		
+		char value = gameBoy.memory.readByte(address);
+		char rotatedBit = (char)(value >> 7);
+		char oldCarry = (char)((registers[INDEX_F] & CARRY_BIT) >> 4); 
+		value = (char) (oldCarry | (value << 1));
+		
+		if(rotatedBit == 0)				resetFlags(CARRY_BIT);
+		else							setFlags(CARRY_BIT);
+		
+		if(value == 0)					setFlags(ZERO_BIT);
+		else							resetFlags(ZERO_BIT);
+		
+		gameBoy.memory.writeByte(address, value, HardwareType.CPU);
+		
+		resetFlags(OP_BIT | HALF_CARRY_BIT);
+		
+		M += 4;
+		T += 16;
 			
 	}
 	
