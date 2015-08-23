@@ -50,7 +50,7 @@ public class Memory {
 		this.gameBoy = gameBoy;
 		
 		//set all lines of the joypad register high initially
-		memory[InputHandler.JOYPAD_ADDR] = (char)0xFF;
+		memory[InputHandler.JOYPAD_ADDR] = (char)0x3F;
 		
 		//default
 		memoryBankingMode = 0;
@@ -144,14 +144,16 @@ public class Memory {
 			switch(type){
 			
 			case CPU:
-				memory[address] = (char) ((char)(~0x30 & memory[address]));
-				memory[address] = (char) ((char)(data & 0x30) | memory[address]);
-			case LCDController:	break;
+				memory[address] &= ~0x30;
+				memory[address] |= (char)(data & 0x30);
+				//System.out.println("CPU just wrote " + Integer.toHexString(data) + " to FF00, it was masked with " + Integer.toBinaryString(0x30));
+				break;
 			case Joypad:
-				memory[address] = (char) ((char)(~0xCF & memory[address]));
-				memory[address] = (char) ((char)(data & 0xCF) | memory[address]);
-			case ROMLoader:		break;
-			default:			break;
+				memory[address] &= ~0x0F;
+				memory[address] |= (char)(data & 0x0F);
+				//System.out.println("Joypad just wrote " + Integer.toHexString(data) + " to FF00, it was masked with " + Integer.toBinaryString(0x0F));
+				break;
+			default:	break;
 			}
 			return;
 		}

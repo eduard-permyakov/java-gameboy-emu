@@ -173,15 +173,11 @@ public class CPU extends Thread{
 //		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 //		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
-		if(pc == 0x3F4){
-			System.out.print("");
+		if(pc == 0x3D5){
+			
 		}
 		
 		if(pc == 0x2559){
-			System.out.print("");
-		}
-		
-		if(pc == 0x1E2D){
 			System.out.print("");
 		}
 		

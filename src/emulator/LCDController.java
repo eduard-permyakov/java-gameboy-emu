@@ -338,13 +338,13 @@ public class LCDController extends Thread{
 			char[] spriteAtts = spriteAttsArray[i];
 
 			char x = spriteAtts[0];
-			char y = (char) (spriteAtts[1] - 8);
+			char y = (char) (spriteAtts[1] - 16);
 			char index = spriteAtts[2];
 			char flags = spriteAtts[3];//TODO
-			int lineIndex = this.y%8;
+			int lineIndex = this.y - y;
 			
-			if(this.y < y - 4 || this.y > y + 4) //this is wrong
-				continue;
+			if(lineIndex < 0 || lineIndex >= 8) //this is wrong
+				continue; 
 			
 			//this hides the sprite
 			if(y == 0 && x == 0)
@@ -355,7 +355,7 @@ public class LCDController extends Thread{
 
 			for(int j = 0; j < 8; j++){
 				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
-				if(color != 0) //color 0 is transparent for sprites
+				if(color != 0 && color !=1) //color 0 is transparent for sprites //TOOD: fix this temp. hack
 					linePixelArray[x+j] = color;
 			}
 		}

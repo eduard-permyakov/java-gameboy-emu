@@ -22,6 +22,9 @@ public class ScreenFrame extends JFrame{
 	}
 	
 	private void init() {
+		
+		new RepeatingReleasedEventsFixer().install();
+		
 		screenPanel = new ScreenPanel();
 		
 		setLayout(new BorderLayout());
