@@ -30,7 +30,7 @@ public class Memory {
 	private char 			currentRomBankAddr;
 	private final char		mbc1Offset = 0x4000;
 	
-	private char[] memory;
+	private volatile char[] memory;
 	private GameBoy gameBoy;
 	
 	final static int SIXTEEN_KB_ROM_BANK_0_ADDR 			= 0x0000;
@@ -187,10 +187,10 @@ public class Memory {
 					color = Color.white;
 					break;
 				case 0b01:
-					color = Color.lightGray;
+					color = Color.white;
 					break;
 				case 0b10:
-					color = Color.darkGray;
+					color = Color.black;
 					break;
 				case 0b11:
 					color = Color.black;
@@ -276,7 +276,7 @@ public class Memory {
 		}
 		
 		//LCD control register
-		if(address == LCDController.LCDC_REGISTER_ADDR){
+		if(address == LCDController.LCDC_REGISTER_ADDR && type == HardwareType.CPU){
 			if((data & 0x80) == 0){//enable/disable LCD
 				gameBoy.disableLCD();
 			}else{
@@ -296,6 +296,11 @@ public class Memory {
 	
 	public char[] readContiguousBlock(int startAddress, int endAddress){
 		return Arrays.copyOfRange(memory, startAddress, endAddress);
+	}
+	
+	public char readWord(int address){
+		//TODO: this nightmare refactor
+		return 0;
 	}
 
 	public char readByte(int address){

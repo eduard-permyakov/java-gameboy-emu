@@ -63,7 +63,7 @@ public class LCDController extends Thread{
 	public final static char WIN_TILE_MAP_DISPLAY_SEL_BIT	= 0x40; //0=9800-9BFF, 1=9C00-9FFF
 	public final static char LCD_DISPLAY_ENABLE				= 0x80; //0=Off, 1=On (When bit 0 is cleared, the background becomes white)
 	
-	public final static char LCD_REGISTER_ADDR = 0xFF41; 					//LCD status register address
+	public final static char LCD_REGISTER_ADDR 				= 0xFF41;//LCD status register address
 	
 	public final static char MODE_BITS 						= 0x03; //Mode flag(modes 0-3) 	[READ ONLY]
 	public final static char COINCIDENCE_FLAG_BIT			= 0X04; //0=LYC<>LY, 1=LYC=LY  	[READ ONLY]
@@ -157,9 +157,6 @@ public class LCDController extends Thread{
 //		else
 //			System.out.println("LCD Controller State: " + this.state +"(y: "+(int)y+")"+"(clk: "+gameBoy.getClockCycles()+")");
 
-				
-		updateStatusRegister();
-		updateLYRegister();
 		updateScrollValues();
 		winPosX = gameBoy.memory.readByte(WX_REGISTER_ADDR);
 
@@ -185,8 +182,6 @@ public class LCDController extends Thread{
 			gameBoy.projectRow(y, linePixelArray);
 			
 			y++;
-			
-			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
 		case LCD_STATE_VBLANK:
@@ -196,25 +191,23 @@ public class LCDController extends Thread{
 			y++;
 //			if(y > 152)
 //				y = 0;
-			
-			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
 		case LCD_STATE_READING_OAM_ONLY:
 			readOAM();
-			gameBoy.LCDControllerDidNotifyOfStateCompletion();
 				
 			break;
 		case LCD_STATE_READING_OAM_AND_VRAM:
 			readOAMandVRAM();
 				
-			gameBoy.LCDControllerDidNotifyOfStateCompletion();
-				
 			break;
 			default:
 
 		}
-				
+			
+		updateLYRegister();
+		updateStatusRegister();
+		gameBoy.LCDControllerDidNotifyOfStateCompletion();
 
 	}
 	
@@ -229,53 +222,55 @@ public class LCDController extends Thread{
 	
 	private void updateStatusRegister(){
 		//LCD status register
-		//TODO: figure out the interrupts
-		if(gameBoy.memory.readByte(LYC_REGISTER_ADDR) == gameBoy.memory.readByte(LY_REGISTER_ADDR)){
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, true, HardwareType.LCDController);
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, COINCIDENCE_FLAG_BIT, true, HardwareType.LCDController);
-		}else{
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, false, HardwareType.LCDController);
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, COINCIDENCE_FLAG_BIT, false, HardwareType.LCDController);
-		}
+		gameBoy.memory.setMask(LCD_REGISTER_ADDR, (char)0x80, true, HardwareType.LCDController);
 		
-		//hblank
-		if(this.state == LCDControllerState.LCD_STATE_HBLANK){
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, true, HardwareType.LCDController);
-		}else{
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, false, HardwareType.LCDController);
-		}
-		
-		//vblank
-		if(this.state == LCDControllerState.LCD_STATE_VBLANK){
-			gameBoy.memory.writeByte(LCD_REGISTER_ADDR, (char)(gameBoy.memory.readByte(LCD_REGISTER_ADDR) | MODE_1_V_BLANK_INTERRUPT_BIT), 
-					HardwareType.LCDController);
-		}else{
-			gameBoy.memory.writeByte(LCD_REGISTER_ADDR, (char)(gameBoy.memory.readByte(LCD_REGISTER_ADDR) & ~MODE_1_V_BLANK_INTERRUPT_BIT),
-					HardwareType.LCDController);
-		}
-		
-		//oam
-		if(this.state == LCDControllerState.LCD_STATE_READING_OAM_ONLY){
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_2_OAM_INTERRUPT, true, HardwareType.LCDController);
-		}else{
-			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_2_OAM_INTERRUPT, false, HardwareType.LCDController);//if i-enabled
-		}
+//		if(gameBoy.memory.readByte(LCD_REGISTER_ADDR) == y){
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, true, HardwareType.LCDController);
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, COINCIDENCE_FLAG_BIT, true, HardwareType.LCDController);
+//		}else{
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, false, HardwareType.LCDController);
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, COINCIDENCE_FLAG_BIT, false, HardwareType.LCDController);
+//		}
+//		
+//		//hblank
+//		if(this.state == LCDControllerState.LCD_STATE_HBLANK){
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, true, HardwareType.LCDController);
+//		}else{
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_0_H_BLANK_INTERRUPT_BIT, false, HardwareType.LCDController);
+//		}
+//		
+//		//vblank
+//		if(this.state == LCDControllerState.LCD_STATE_VBLANK){
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_1_V_BLANK_INTERRUPT_BIT, true, HardwareType.LCDController);
+//		}else{
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_1_V_BLANK_INTERRUPT_BIT, false, HardwareType.LCDController);
+//		}
+//		
+//		//oam
+//		if(this.state == LCDControllerState.LCD_STATE_READING_OAM_ONLY){
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_2_OAM_INTERRUPT, true, HardwareType.LCDController);
+//		}else{
+//			gameBoy.memory.setMask(LCD_REGISTER_ADDR, MODE_2_OAM_INTERRUPT, false, HardwareType.LCDController);//if i-enabled
+//		}
 		
 		//mode flag
-		char modeFlag;
+		char modeFlag = 0;
 		switch(this.state){
-		case LCD_STATE_READING_OAM_ONLY:
-			modeFlag = 0b10;
+		case LCD_STATE_HBLANK:
+			modeFlag = 0b00;
 			break;
 		case LCD_STATE_VBLANK:
 			modeFlag = 0b01;
 			break;
-		case LCD_STATE_HBLANK:
-			modeFlag = 0b00;
+		case LCD_STATE_READING_OAM_ONLY:
+			modeFlag = 0b10;
 			break;
-			default:
-				return;
+		case LCD_STATE_READING_OAM_AND_VRAM:
+			modeFlag = 0b11;
+			break;
 		}
+		if(!lcdEnabled)
+			modeFlag = 0b01;
 		gameBoy.memory.setMask(LCD_REGISTER_ADDR, (char)0b11, false, HardwareType.LCDController);
 		gameBoy.memory.setMask(LCD_REGISTER_ADDR, modeFlag, true, HardwareType.LCDController);
 	}
@@ -323,25 +318,48 @@ public class LCDController extends Thread{
 	//bugged
 	private void makeLinePixelArray(){
 		//TODO: diff. tile addressing if it's BG #2
-		final int bgTileBaseIndex = ((int)((scrollPosY+y)/8))*32 % 1024; //double check this
+		final int bgTileBaseIndex = ((int)((scrollPosY+y)/8))*32;
 		final int yCoordinate = (scrollPosY+y)%8;
-		//System.out.println("scrY: " +scrollPosY);
 		
+		//first "draw" the background tiles
 		for(int i = 0; i < 32; i++){
 
 			char[] sprite = spritesArray[bgDataArray[bgTileBaseIndex+i]];
-			
 			int rowBitSequence = ((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
-			
-//			if(rowBitSequence != 0){
-//				String.format("%16s", Integer.toBinaryString(rowBitSequence)).replace(' ', '0');
-//			}
 
 			for(int j = 0; j < 8; j++){
-				final char color = (char)((rowBitSequence >> (15-j)) & 0b11);
+				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
 				linePixelArray[8*i+j] = color;
 			}
 		}
+		
+		//now go through all the objects
+		for(int i = 0; i < 40; i++){
+			char[] spriteAtts = spriteAttsArray[i];
+
+			char x = spriteAtts[0];
+			char y = spriteAtts[1];
+			char index = spriteAtts[2];
+			char flags = spriteAtts[3];//TODO
+			int lineIndex = this.y%8;
+			
+			if((y + lineIndex) != this.y)
+				continue;
+			
+			//this hides the sprite
+			if(y == 0 && x == 0)
+				continue;
+			
+			char[] sprite = spritesArray[index];
+			int rowBitSequence = ((sprite[2*lineIndex] << 8) | sprite[2*lineIndex+1]);
+
+			for(int j = 0; j < 8; j++){
+				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
+				if(color != 0) //color 0 is transparent for sprites
+					linePixelArray[x+j] = color;
+			}
+		}
+		
 	}
 	
 	private void performVBlank(){

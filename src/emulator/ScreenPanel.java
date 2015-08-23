@@ -69,6 +69,14 @@ public class ScreenPanel extends JPanel{
 			g.fillRect(i*PIXEL_SCALE_FACTOR, currentRow*PIXEL_SCALE_FACTOR, 
 					PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
 		}
+		
+		//debug code
+//		for(int i = 0; i < 160; i++){
+//			g.setColor(Color.green);
+//			if(i%8 == 0)
+//				g.setColor(Color.red);
+//			g.drawLine(i * PIXEL_SCALE_FACTOR, 0, i * PIXEL_SCALE_FACTOR, this.getSize().height);
+//		}
 	}
 	
 	public Dimension getScreenDimension() {

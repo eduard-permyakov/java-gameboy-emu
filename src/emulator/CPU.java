@@ -137,7 +137,6 @@ public class CPU extends Thread{
 	}
 	
 	private void serviceInterrrupts(){
-		this.isStopped = false;
 		System.out.println("service interrupts");
 	}
 	
@@ -171,17 +170,18 @@ public class CPU extends Thread{
 	
 	private void decodeAndExecuteOpcode(){
 		
-//		if(pc == 0x100){
-//			for(int i = 0; i < gameBoy.memory.length; i++){
-//				if(gameBoy.memory[i] != 0x0)
-//					System.out.println("ADDR: "+Integer.toHexString(i).toUpperCase()+" value: "
-//							+String.format("%16s", Integer.toBinaryString(gameBoy.memory[i])).replace(' ', '0'));
-//			}
-//		}
-		
 //		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 //		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
 		
+		if(pc == 0x3F4){
+			System.out.print("");
+		}
+		
+		if(pc == 0x2559){
+			System.out.println("LCD STAT : " + Integer.toHexString(gameBoy.memory.readByte(0xFF41)));
+			System.out.println("LY : " + Integer.toString(gameBoy.memory.readByte(0xFF44)));
+			System.out.print("");
+		}
 		
 		switch(currentOpcode){
 		
@@ -209,31 +209,31 @@ public class CPU extends Thread{
 				break;
 			}
 			
-			case 0x11: {
-				char carryFlag = (char)(((registers[INDEX_F]) >> 4) & 0x1);
-				
-				if(((registers[INDEX_C] >> 7) &0x1) > 0)
-					registers[INDEX_F] |= CARRY_BIT;
-				else
-					registers[INDEX_F] &= ~CARRY_BIT;
-				
-				registers[INDEX_F] &= ~OP_BIT;
-				registers[INDEX_F] &= ~HALF_CARRY_BIT;
-				
-				registers[INDEX_C] = (char)(((registers[INDEX_C] << 1) | carryFlag) & 0xFF);
-				
-				if(registers[INDEX_C] == 0)
-					registers[INDEX_F] |= ZERO_BIT;
-				else
-					registers[INDEX_F] &= ~ZERO_BIT;
-
-				
-				
-				M += 1;
-				T += 4;
-				
-				break;
-			}
+//			case 0x11: {
+//				char carryFlag = (char)(((registers[INDEX_F]) >> 4) & 0x1);
+//				
+//				if(((registers[INDEX_C] >> 7) &0x1) > 0)
+//					registers[INDEX_F] |= CARRY_BIT;
+//				else
+//					registers[INDEX_F] &= ~CARRY_BIT;
+//				
+//				registers[INDEX_F] &= ~OP_BIT;
+//				registers[INDEX_F] &= ~HALF_CARRY_BIT;
+//				
+//				registers[INDEX_C] = (char)(((registers[INDEX_C] << 1) | carryFlag) & 0xFF);
+//				
+//				if(registers[INDEX_C] == 0)
+//					registers[INDEX_F] |= ZERO_BIT;
+//				else
+//					registers[INDEX_F] &= ~ZERO_BIT;
+//
+//				
+//				
+//				M += 1;
+//				T += 4;
+//				
+//				break;
+//			}
 			
 			case 0x37:{
 				
@@ -591,6 +591,41 @@ public class CPU extends Thread{
 			case 0x06:{
 				char address = (char)((registers[INDEX_H] << 8) | registers[INDEX_L]);
 				rotateMemLeftThroughCarry(address);
+				break;
+			}
+			
+			case 0x17:{
+				rotateRegLeftIntoCarry(INDEX_A);
+				break;
+			}
+			
+			case 0x10:{
+				rotateRegLeftIntoCarry(INDEX_B);
+				break;
+			}
+			
+			case 0x11:{
+				rotateRegLeftIntoCarry(INDEX_C);
+				break;
+			}
+			
+			case 0x12:{
+				rotateRegLeftIntoCarry(INDEX_D);
+				break;
+			}
+			
+			case 0x13:{
+				rotateRegLeftIntoCarry(INDEX_E);
+				break;
+			}
+			
+			case 0x14:{
+				rotateRegLeftIntoCarry(INDEX_H);
+				break;
+			}
+			
+			case 0x15:{
+				rotateRegLeftIntoCarry(INDEX_L);
 				break;
 			}
 			
@@ -1545,9 +1580,9 @@ public class CPU extends Thread{
 		case 0xF5: {
 			
 			sp --;
-			gameBoy.memory.writeByte(sp, registers[INDEX_F], HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte(sp, registers[INDEX_A], HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte(sp, registers[INDEX_F], HardwareType.CPU);
 			
 			M += 4;
 			T += 16;
@@ -1558,9 +1593,9 @@ public class CPU extends Thread{
 		case 0xC5: {
 			
 			sp --;
-			gameBoy.memory.writeByte(sp, registers[INDEX_C], HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte(sp, registers[INDEX_B], HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte(sp, registers[INDEX_C], HardwareType.CPU);
 			
 			M += 4;
 			T += 16;
@@ -1571,9 +1606,9 @@ public class CPU extends Thread{
 		case 0xD5: {
 			
 			sp --;
-			gameBoy.memory.writeByte(sp, registers[INDEX_E], HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte(sp, registers[INDEX_D], HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte(sp, registers[INDEX_E], HardwareType.CPU);
 			
 			M += 4;
 			T += 16;
@@ -1584,9 +1619,9 @@ public class CPU extends Thread{
 		case 0xE5: {
 			
 			sp --;
-			gameBoy.memory.writeByte(sp, registers[INDEX_L], HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte(sp, registers[INDEX_H], HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte(sp, registers[INDEX_L], HardwareType.CPU);
 			
 			M += 4;
 			T += 16;
@@ -1596,10 +1631,10 @@ public class CPU extends Thread{
 		
 		case 0xF1: {
 			
-			registers[INDEX_A] = gameBoy.memory.readByte(sp);
-			sp ++;
 			//Least significant nibble is always 0 in reg. F
 			registers[INDEX_F] = (char)(gameBoy.memory.readByte(sp) & 0xF0);
+			sp ++;
+			registers[INDEX_A] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1610,9 +1645,9 @@ public class CPU extends Thread{
 		
 		case 0xC1: {
 			
-			registers[INDEX_B] = gameBoy.memory.readByte(sp);
-			sp ++;
 			registers[INDEX_C] = gameBoy.memory.readByte(sp);
+			sp ++;
+			registers[INDEX_B] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1623,9 +1658,9 @@ public class CPU extends Thread{
 		
 		case 0xD1: {
 			
-			registers[INDEX_D] = gameBoy.memory.readByte(sp);
-			sp ++;
 			registers[INDEX_E] = gameBoy.memory.readByte(sp);
+			sp ++;
+			registers[INDEX_D] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -1636,9 +1671,9 @@ public class CPU extends Thread{
 		
 		case 0xE1: {
 			
-			registers[INDEX_H] = gameBoy.memory.readByte(sp);
-			sp ++;
 			registers[INDEX_L] = gameBoy.memory.readByte(sp);
+			sp ++;
+			registers[INDEX_H] = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			M += 4;
@@ -2463,6 +2498,8 @@ public class CPU extends Thread{
 		
 		case 0x0C: {
 			int result = registers[INDEX_C]+1;
+			if(registers[INDEX_C] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -2485,11 +2522,11 @@ public class CPU extends Thread{
 			
 			char immediateLS = gameBoy.memory.readByte(++pc);
 			char immediateMS = gameBoy.memory.readByte(++pc);
-						
-			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
+				
 			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = (char)((immediateMS << 8) | immediateLS);
 
@@ -2546,9 +2583,9 @@ public class CPU extends Thread{
 		
 		case 0xC9: {
 			
-			char retAddMS = gameBoy.memory.readByte(sp);
-			sp ++;
 			char retAddLS = gameBoy.memory.readByte(sp);
+			sp ++;
+			char retAddMS = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			pc = (char)((retAddMS << 8) | retAddLS);
@@ -2725,6 +2762,8 @@ public class CPU extends Thread{
 		
 		case 0x3C:{
 			int result = registers[INDEX_A]+1;
+			if(registers[INDEX_A] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -2740,11 +2779,16 @@ public class CPU extends Thread{
 			
 			registers[INDEX_A] = (char)(result&0xFF);
 			
+			M += 1;
+			T += 4;
+			
 			break;
 		}
 		
 		case 0x04: {
 			int result = registers[INDEX_B]+1;
+			if(registers[INDEX_B] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -2759,6 +2803,9 @@ public class CPU extends Thread{
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
 			registers[INDEX_B] = (char)(result&0xFF);
+			
+			M += 1;
+			T += 4;
 			
 			break;
 		}
@@ -3082,6 +3129,8 @@ public class CPU extends Thread{
 		case 0x24:{
 			
 			int result = registers[INDEX_H]+1;
+			if(registers[INDEX_H] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -3096,6 +3145,9 @@ public class CPU extends Thread{
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
 			registers[INDEX_H] = (char)result;
+			
+			M += 1;
+			T += 4;
 			
 			break;	
 		}
@@ -3481,8 +3533,7 @@ public class CPU extends Thread{
 			registers[INDEX_F] |= HALF_CARRY_BIT;
 			registers[INDEX_F] &= ~CARRY_BIT;
 			
-			M += 1;		registers = new char[8];
-
+			M += 1;
 			T += 4;
 			
 			break;
@@ -3564,9 +3615,9 @@ public class CPU extends Thread{
 		
 		case 0xC7:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0000;
 			
@@ -3581,9 +3632,9 @@ public class CPU extends Thread{
 		
 		case 0xCF:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0008;
 			
@@ -3598,9 +3649,9 @@ public class CPU extends Thread{
 		
 		case 0xD7:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0010;
 			
@@ -3615,9 +3666,9 @@ public class CPU extends Thread{
 		
 		case 0xDF:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0018;
 			
@@ -3632,9 +3683,9 @@ public class CPU extends Thread{
 		
 		case 0xE7:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0020;
 			
@@ -3649,9 +3700,9 @@ public class CPU extends Thread{
 		
 		case 0xEF:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0028;
 			
@@ -3666,9 +3717,9 @@ public class CPU extends Thread{
 		
 		case 0xF7:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0030;
 			
@@ -3683,9 +3734,9 @@ public class CPU extends Thread{
 		
 		case 0xFF:{
 			sp --;
-			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-			sp --;
 			gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+			sp --;
+			gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 			
 			pc = 0x0038;
 			
@@ -3738,7 +3789,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~CARRY_BIT;
 			
-			if(((value1&0xFFF) + (value2&0xFFF)) > 0x3FF)
+			if(((value1&0xFFF) + (value2&0xFFF)) > 0xFFF)
 				registers[INDEX_F] |= HALF_CARRY_BIT;
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
@@ -3854,9 +3905,9 @@ public class CPU extends Thread{
 			if((registers[INDEX_F] & ZERO_BIT) == 0){
 				
 				sp --;
-				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-				sp --;
 				gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+				sp --;
+				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 				
 				pc = value;
 				
@@ -3880,9 +3931,9 @@ public class CPU extends Thread{
 			if((registers[INDEX_F] & ZERO_BIT) > 0){
 				
 				sp --;
-				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-				sp --;
 				gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+				sp --;
+				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 				
 				pc = value;
 				
@@ -3906,9 +3957,9 @@ public class CPU extends Thread{
 			if((registers[INDEX_F] & CARRY_BIT) == 0){
 				
 				sp --;
-				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-				sp --;
 				gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+				sp --;
+				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 				
 				pc = value;
 				
@@ -3932,9 +3983,9 @@ public class CPU extends Thread{
 			if((registers[INDEX_F] & CARRY_BIT) > 0){
 				
 				sp --;
-				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
-				sp --;
 				gameBoy.memory.writeByte( sp, (char)(pc+1 >> 8) ,HardwareType.CPU);
+				sp --;
+				gameBoy.memory.writeByte( sp, (char)(pc+1 &0xFF) ,HardwareType.CPU);
 				
 				pc = value;
 				
@@ -3949,6 +4000,8 @@ public class CPU extends Thread{
 		
 		case 0x14:{
 			int result = registers[INDEX_D]+1;
+			if(registers[INDEX_D] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -3964,11 +4017,16 @@ public class CPU extends Thread{
 			
 			registers[INDEX_D] = (char)(result&0xFF);
 			
+			M += 1;
+			T += 4;
+			
 			break;
 		}
 		
 		case 0x1C:{
 			int result = registers[INDEX_E]+1;
+			if(registers[INDEX_E] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -3984,11 +4042,16 @@ public class CPU extends Thread{
 			
 			registers[INDEX_E] = (char)(result&0xFF);
 			
+			M += 1;
+			T += 4;
+			
 			break;
 		}
 		
 		case 0x2C:{
 			int result = registers[INDEX_L]+1;
+			if(registers[INDEX_L] == 0xFF)
+				result = 0;
 			
 			if((result&0xFF) == 0)
 				registers[INDEX_F] |= ZERO_BIT;
@@ -4003,6 +4066,9 @@ public class CPU extends Thread{
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
 			registers[INDEX_L] = (char)(result&0xFF);
+			
+			M += 1;
+			T += 4;
 			
 			break;
 		}
@@ -4026,6 +4092,9 @@ public class CPU extends Thread{
 			
 			gameBoy.memory.writeByte(address, (char)(result&0xFF), HardwareType.CPU);
 			
+			M += 3;
+			T += 12;
+			
 			break;
 		}
 		
@@ -4035,9 +4104,9 @@ public class CPU extends Thread{
 			T += 8;
 			
 			if((registers[INDEX_F] & ZERO_BIT) == 0){
-				char retAddMS = gameBoy.memory.readByte(sp);
-				sp ++;
 				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddMS = gameBoy.memory.readByte(sp);
 				sp ++;
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
@@ -4057,9 +4126,9 @@ public class CPU extends Thread{
 			T += 8;
 			
 			if((registers[INDEX_F] & ZERO_BIT) > 0){
-				char retAddMS = gameBoy.memory.readByte(sp);
-				sp ++;
 				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddMS = gameBoy.memory.readByte(sp);
 				sp ++;
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
@@ -4078,9 +4147,9 @@ public class CPU extends Thread{
 			T += 8;
 			
 			if((registers[INDEX_F] & CARRY_BIT) == 0){
-				char retAddMS = gameBoy.memory.readByte(sp);
-				sp ++;
 				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddMS = gameBoy.memory.readByte(sp);
 				sp ++;
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
@@ -4098,10 +4167,11 @@ public class CPU extends Thread{
 			M += 2;
 			T += 8;
 			
-			if((registers[INDEX_F] & ZERO_BIT) > 0){
-				char retAddMS = gameBoy.memory.readByte(sp);
-				sp ++;
+			if((registers[INDEX_F] & CARRY_BIT) > 0){
+				
 				char retAddLS = gameBoy.memory.readByte(sp);
+				sp ++;
+				char retAddMS = gameBoy.memory.readByte(sp);
 				sp ++;
 				
 				pc = (char)((retAddMS << 8) | retAddLS);
@@ -4573,9 +4643,10 @@ public class CPU extends Thread{
 		}
 		
 		case 0xD9:{
-			char retAddMS = gameBoy.memory.readByte(sp);
-			sp ++;
+			
 			char retAddLS = gameBoy.memory.readByte(sp);
+			sp ++;
+			char retAddMS = gameBoy.memory.readByte(sp);
 			sp ++;
 			
 			pc = (char)((retAddMS << 8) | retAddLS);
@@ -4738,8 +4809,8 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
-			char addMS = gameBoy.memory.readByte(++pc);
 			char addLS = gameBoy.memory.readByte(++pc);
+			char addMS = gameBoy.memory.readByte(++pc);
 			
 			if((registers[INDEX_F] & ZERO_BIT) == 0){
 				
@@ -4761,8 +4832,8 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
-			char addMS = gameBoy.memory.readByte(++pc);
 			char addLS = gameBoy.memory.readByte(++pc);
+			char addMS = gameBoy.memory.readByte(++pc);
 			
 			if((registers[INDEX_F] & ZERO_BIT) > 0){
 				
@@ -4784,8 +4855,8 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
-			char addMS = gameBoy.memory.readByte(++pc);
 			char addLS = gameBoy.memory.readByte(++pc);
+			char addMS = gameBoy.memory.readByte(++pc);
 			
 			if((registers[INDEX_F] & CARRY_BIT) == 0){
 				
@@ -4807,8 +4878,8 @@ public class CPU extends Thread{
 			M += 3;
 			T += 12;
 			
-			char addMS = gameBoy.memory.readByte(++pc);
 			char addLS = gameBoy.memory.readByte(++pc);
+			char addMS = gameBoy.memory.readByte(++pc);
 			
 			if((registers[INDEX_F] & CARRY_BIT) > 0){
 				
@@ -4961,6 +5032,34 @@ public class CPU extends Thread{
 			break;
 		}
 		
+		case 0x44:{
+			
+			registers[INDEX_B] = registers[INDEX_H];
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
+		case 0x0F:{
+			char rotatedBit = (char)(registers[INDEX_A] & 1);
+			registers[INDEX_A] = (char) ((rotatedBit << 7) | (registers[INDEX_A] >> 1));
+			
+			if(rotatedBit == 0)				resetFlags(CARRY_BIT);
+			else							setFlags(CARRY_BIT);
+			
+			if(registers[INDEX_A] == 0)		setFlags(ZERO_BIT);
+			else							resetFlags(ZERO_BIT);
+			
+			resetFlags(OP_BIT | HALF_CARRY_BIT);
+			
+			M += 1;
+			T += 4;
+			
+			break;
+		}
+		
 			default:{
 				System.err.println("Unsupported Opcode: " +Integer.toHexString(currentOpcode).toUpperCase());
 				System.exit(0);
@@ -5076,6 +5175,23 @@ public class CPU extends Thread{
 		M += 2;
 		T += 8;
 			
+	}
+	
+	private void rotateRegLeftIntoCarry(int regIndex){
+		
+		char rotatedBit = (char)(registers[regIndex] >> 7);
+		registers[regIndex] = (char) (rotatedBit | (registers[regIndex] << 1));
+		
+		if(rotatedBit == 0)				resetFlags(CARRY_BIT);
+		else							setFlags(CARRY_BIT);
+		
+		if(registers[regIndex] == 0)	setFlags(ZERO_BIT);
+		else							resetFlags(ZERO_BIT);
+		
+		resetFlags(OP_BIT | HALF_CARRY_BIT);
+		
+		M += 2;
+		T += 8;
 	}
 	
 	private final void rotateMemLeftThroughCarry(int address){
