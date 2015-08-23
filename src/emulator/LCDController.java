@@ -116,7 +116,7 @@ public class LCDController extends Thread{
 		this.gameBoy = gameBoy;
 		this.barrier = barrier;
 		this.state = LCDControllerState.LCD_STATE_READING_OAM_ONLY;
-		
+	
 		y = 0;
 		winPosX = 0;
 		winPosY = 0;
@@ -324,7 +324,7 @@ public class LCDController extends Thread{
 		//first "draw" the background tiles
 		for(int i = 0; i < 32; i++){
 
-			char[] sprite = spritesArray[bgDataArray[bgTileBaseIndex+i]];
+			char[] sprite = spritesArray[bgDataArray[(bgTileBaseIndex+i) % 1024]]; //....
 			int rowBitSequence = ((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
 
 			for(int j = 0; j < 8; j++){
@@ -338,12 +338,12 @@ public class LCDController extends Thread{
 			char[] spriteAtts = spriteAttsArray[i];
 
 			char x = spriteAtts[0];
-			char y = spriteAtts[1];
+			char y = (char) (spriteAtts[1] - 8);
 			char index = spriteAtts[2];
 			char flags = spriteAtts[3];//TODO
 			int lineIndex = this.y%8;
 			
-			if((y + lineIndex) != this.y)
+			if(this.y < y - 4 || this.y > y + 4) //this is wrong
 				continue;
 			
 			//this hides the sprite

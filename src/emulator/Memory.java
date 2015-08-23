@@ -297,26 +297,20 @@ public class Memory {
 	public char[] readContiguousBlock(int startAddress, int endAddress){
 		return Arrays.copyOfRange(memory, startAddress, endAddress);
 	}
-	
-	public char readWord(int address){
-		//TODO: this nightmare refactor
-		return 0;
-	}
 
 	public char readByte(int address){
 
 		switch(this.memoryBankingMode){
-		case 0: break;
-		case 1: {
-			if((address >= 0x4000 && address < 0x8000) && currentRomBankAddr > 0){
-				return (char)(mbc1Banks[currentRomBankAddr - 1][address % mbc1Offset] & 0xFF);
+			case 0: break;
+			case 1: {
+				if((address >= 0x4000 && address < 0x8000) && currentRomBankAddr > 0){
+					return (char)(mbc1Banks[currentRomBankAddr - 1][address % mbc1Offset] & 0xFF);
+				}
+				break;
 			}
-			break;
-		}
-		default: break;
 		}
 			
-		return (char)(memory[address] & 0xFF);
+		return memory[address];
 	}
 	
 	public void DMATransfer() {

@@ -24,6 +24,9 @@ public class InputHandler implements KeyListener {
 	
 	@Override
 	public void keyPressed(KeyEvent event) {
+//		System.out.println("P14 low: " + isP14Low());
+//		System.out.println("P15 low: " + isP15Low());
+
 		updateJoypadRegister(event);
 		gameBoy.resumeCPUExecution();
 	}
@@ -38,15 +41,17 @@ public class InputHandler implements KeyListener {
 	
 	private boolean isP14Low() {
 		char joypadRegVal = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
-		return ((joypadRegVal >> 4) & 0b1) == 0b1;
+		return (joypadRegVal & 0x10) == 0;
 	}
 	
 	private boolean isP15Low() {
 		char joypadRegVal = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
-		return ((joypadRegVal >> 5) & 0b1) == 0b1;
+		return (joypadRegVal & 0x20) == 0;
 	}
 	
 	private void updateJoypadRegister(KeyEvent event){
+//		char regVal = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
+//		regVal &= ~0xF;//clear bottom 4 bits
 		if(isP14Low()){
 			switch(event.getKeyCode()){
 			case A_KEY:			break;
