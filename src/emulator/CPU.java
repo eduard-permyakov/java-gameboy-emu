@@ -19,6 +19,8 @@ enum Interrupt{
 
 public class CPU extends Thread{
 	
+	public volatile boolean debugFlag = false;
+	
 	public final static int PROCESSOR_FREQUENCY_HZ = 4194304;
 	public final static int NANOSECONDS_IN_SECOND = 1000000000;
 	
@@ -171,10 +173,11 @@ public class CPU extends Thread{
 	private void decodeAndExecuteOpcode(){
 		
 //		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
-//		System.out.println(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase());
+//		System.out.print(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase() + ((currentOpcode != 0xCB)?"\n":""));
 		
 		if(pc == 0x3D5){
-			
+//			if(this.debugFlag == true)
+//				registers[INDEX_A] = 0xDE;
 		}
 		
 		if(pc == 0x2559){
@@ -187,6 +190,7 @@ public class CPU extends Thread{
 		case 0xCB: {
 			pc++;
 			fetchNextOpcode();
+//			System.out.println(" " + Integer.toHexString(currentOpcode).toUpperCase());
 			
 			switch(currentOpcode){
 			
@@ -5919,10 +5923,10 @@ public class CPU extends Thread{
 	}
 	
 	private void swapNibbles(int regIndex){
-		char lowerNibble = (char)(registers[regIndex] &0xFF);
-		char upperNibble = (char)(registers[regIndex] >> 8);
+		char lowerNibble = (char)(registers[regIndex] &0xF);
+		char upperNibble = (char)(registers[regIndex] >> 4);
 		
-		registers[regIndex] = (char) (lowerNibble << 8 | upperNibble);
+		registers[regIndex] = (char) (lowerNibble << 4 | upperNibble);
 		
 		resetFlags(OP_BIT | HALF_CARRY_BIT | CARRY_BIT);
 		if(registers[regIndex] == 0)

@@ -92,6 +92,10 @@ public class GameBoy extends Thread{
 				break;
 		}
 	}
+	
+	public void setDebugFlag(){
+		cpu.debugFlag = true;
+	}
 
 	//GET/SET
 	

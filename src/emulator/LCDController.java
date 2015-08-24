@@ -338,7 +338,7 @@ public class LCDController extends Thread{
 			char[] spriteAtts = spriteAttsArray[i];
 
 			char x = spriteAtts[0];
-			char y = (char) (spriteAtts[1] - 16);
+			char y = (char) (spriteAtts[1] - 8);
 			char index = spriteAtts[2];
 			char flags = spriteAtts[3];//TODO
 			int lineIndex = this.y - y;
@@ -349,6 +349,8 @@ public class LCDController extends Thread{
 			//this hides the sprite
 			if(y == 0 && x == 0)
 				continue;
+			
+			gameBoy.setDebugFlag();
 			
 			char[] sprite = spritesArray[index];
 			int rowBitSequence = ((sprite[2*lineIndex] << 8) | sprite[2*lineIndex+1]);
