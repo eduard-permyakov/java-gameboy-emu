@@ -2,8 +2,11 @@ package emulator;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 public class InputHandler implements KeyListener {
+	
+	private ArrayList<Integer> pressedKeyCodes;
 	
 	private GameBoy gameBoy;
 	
@@ -20,18 +23,22 @@ public class InputHandler implements KeyListener {
 
 	public InputHandler(GameBoy gameBoy){
 		this.gameBoy = gameBoy;
+		this.pressedKeyCodes = new ArrayList<Integer>();
 	}
 	
 	@Override
 	public void keyPressed(KeyEvent event) {
 //		System.out.println("P14 low: " + isP14Low());
 //		System.out.println("P15 low: " + isP15Low());
+		this.pressedKeyCodes.add(event.getKeyCode());
+		
 		updateJoypadRegisterForPress(event);
 		gameBoy.resumeCPUExecution();
 	}
 
 	@Override
 	public void keyReleased(KeyEvent event) {
+		this.pressedKeyCodes.remove((Object)event.getKeyCode());
 		updateJoypadRegisterForRelease(event);
 	}
 
@@ -48,7 +55,7 @@ public class InputHandler implements KeyListener {
 		return (joypadRegVal & 0x20) == 0;
 	}
 	
-	private void updateJoypadRegisterForRelease(KeyEvent event){
+	private synchronized void updateJoypadRegisterForRelease(KeyEvent event){
 		
 		char joypadReg = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
 		
@@ -71,34 +78,26 @@ public class InputHandler implements KeyListener {
 		
 	}
 	
-	private void updateJoypadRegisterForPress(KeyEvent event){
+	private synchronized void updateJoypadRegisterForPress(KeyEvent event){
 		
 		char joypadReg = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
 		
-//		if(isP14Low()){
+		if(isP14Low()){
 			switch(event.getKeyCode()){
-			case UP_KEY:
-			case SELECT_KEY:
-				joypadReg &= ~0x04;	break;
-			case DOWN_KEY:
-			case START_KEY:
-				joypadReg &= ~0x08;	break;
-			case LEFT_KEY:
-			case B_KEY:
-				joypadReg &= ~0x02;	break;
-			case RIGHT_KEY:
-			case A_KEY:
-				joypadReg &= ~0x01;	break;
-			default:				return;
+			case UP_KEY:		joypadReg &= ~0x04;	break;
+			case DOWN_KEY:		joypadReg &= ~0x08;	break;
+			case LEFT_KEY:		joypadReg &= ~0x02;	break;
+			case RIGHT_KEY:		joypadReg &= ~0x01;	break;
+			default:			return;
 			}
-//		}else{
-//			switch(event.getKeyCode()){
-//			case A_KEY:			joypadReg &= ~0x01;	break;
-//			case B_KEY:			joypadReg &= ~0x02;	break;
-//			case START_KEY:		joypadReg &= ~0x08;	break;
-//			case SELECT_KEY:	joypadReg &= ~0x04;	break;
-//			}
-//		}
+		}else if(isP15Low()){
+			switch(event.getKeyCode()){
+			case A_KEY:			joypadReg &= ~0x01;	break;
+			case B_KEY:			joypadReg &= ~0x02;	break;
+			case START_KEY:		joypadReg &= ~0x08;	break;
+			case SELECT_KEY:	joypadReg &= ~0x04;	break;
+			}
+		}
 		gameBoy.memory.writeByte(JOYPAD_ADDR, joypadReg, HardwareType.Joypad);
 		raiseJoypadInterrupt();
 	}
@@ -107,4 +106,30 @@ public class InputHandler implements KeyListener {
 		gameBoy.interruptCPU(Interrupt.InterruptJoypad);
 	}
 
+	public synchronized void updateJoypadRegForInputLineChange(){
+		
+		char joypadReg = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
+		
+		joypadReg |= 0xF;
+		
+		for(Integer pressedKeyCode : this.pressedKeyCodes){
+			if(isP14Low()){
+				switch(pressedKeyCode){
+				case UP_KEY:		joypadReg &= ~0x04;	break;
+				case DOWN_KEY:		joypadReg &= ~0x08;	break;
+				case LEFT_KEY:		joypadReg &= ~0x02;	break;
+				case RIGHT_KEY:		joypadReg &= ~0x01;	break;
+				}
+			}else if(isP15Low()){
+				switch(pressedKeyCode){
+				case A_KEY:			joypadReg &= ~0x01;	break;
+				case B_KEY:			joypadReg &= ~0x02;	break;
+				case START_KEY:		joypadReg &= ~0x08;	break;
+				case SELECT_KEY:	joypadReg &= ~0x04;	break;
+				}
+			}
+		}
+		
+		gameBoy.memory.writeByte(JOYPAD_ADDR, joypadReg, HardwareType.Joypad);
+	}
 }

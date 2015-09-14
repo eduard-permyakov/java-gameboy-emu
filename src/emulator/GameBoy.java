@@ -18,6 +18,8 @@ public class GameBoy extends Thread{
 	private CPU cpu;
 	private LCDController lcd;
 	private ScreenFrame screenFrame;
+	
+	public InputHandler inputHandler;
 	public Memory memory;
 		
 	public GameBoy() {
@@ -31,6 +33,7 @@ public class GameBoy extends Thread{
 		memory = new Memory(this);
 		cpu = new CPU(this, barrier);
 		lcd = new LCDController(this, barrier);
+		inputHandler = new InputHandler(this);
 		screenFrame = new ScreenFrame(this);
 		
 		lcdControllerIsIdle = false;

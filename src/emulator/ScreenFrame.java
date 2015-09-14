@@ -12,7 +12,7 @@ public class ScreenFrame extends JFrame{
 		super();
 		init();
 		
-		this.addKeyListener(new InputHandler(gameBoy));
+		this.addKeyListener(gameBoy.inputHandler);
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);

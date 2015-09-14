@@ -146,6 +146,7 @@ public class Memory {
 			case CPU:
 				memory[address] &= ~0x30;
 				memory[address] |= (char)(data & 0x30);
+				gameBoy.inputHandler.updateJoypadRegForInputLineChange();
 				//System.out.println("CPU just wrote " + Integer.toHexString(data) + " to FF00, it was masked with " + Integer.toBinaryString(0x30));
 				break;
 			case Joypad:

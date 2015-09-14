@@ -52,7 +52,7 @@ public class LCDController extends Thread{
 	public final static int TOTAL_REFRESH_CYCLES			= 70224;
 	public final static int TOTAL_PRE_VBLANK_CYCLES			= 65664;
 	
-	public final static char LCDC_REGISTER_ADDR 						= 0xFF40;//LCD Control Register address
+	public final static char LCDC_REGISTER_ADDR 			= 0xFF40;//LCD Control Register address
 	
 	public final static char BG_DISPLAY_BIT 				= 0x01;	//0=Off, 1=On
 	public final static char OBJ_DISPLAY_ENABLE_BIT 		= 0x02;	//0=Off, 1=On
