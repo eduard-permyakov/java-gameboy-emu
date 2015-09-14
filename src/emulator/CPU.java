@@ -174,15 +174,11 @@ public class CPU extends Thread{
 		
 //		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 //		System.out.print(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase() + ((currentOpcode != 0xCB)?"\n":""));
+//		
+//		if(pc == 0x188){
+//			System.out.println("break");
+//		}
 		
-		if(pc == 0x3D5){
-//			if(this.debugFlag == true)
-//				registers[INDEX_A] = 0xDE;
-		}
-		
-		if(pc == 0x2559){
-			System.out.print("");
-		}
 		
 		switch(currentOpcode){
 		
@@ -1203,6 +1199,183 @@ public class CPU extends Thread{
 				
 				break;
 			}
+		
+			case 0x40:{
+				testBit(INDEX_B, 0);
+				break;
+			}
+			
+			case 0x41:{
+				testBit(INDEX_C, 0);
+				break;
+			}
+			
+			case 0x42:{
+				testBit(INDEX_D, 0);
+				break;
+			}
+			
+			case 0x43:{
+				testBit(INDEX_E, 0);
+				break;
+			}
+			
+			case 0x44:{
+				testBit(INDEX_H, 0);
+				break;
+			}
+			
+			case 0x45:{
+				testBit(INDEX_L, 0);
+				break;
+			}
+			
+			case 0x47:{
+				testBit(INDEX_A, 0);
+				break;
+			}
+			
+			case 0x48:{
+				testBit(INDEX_B, 1);
+				break;
+			}
+			
+			case 0x49:{
+				testBit(INDEX_C, 1);
+				break;
+			}
+			
+			case 0x4A:{
+				testBit(INDEX_A, 1);
+				break;
+			}
+			
+			case 0x4B:{
+				testBit(INDEX_E, 1);
+				break;
+			}
+			
+			case 0x4C:{
+				testBit(INDEX_H, 1);
+				break;
+			}
+			
+			case 0x4D:{
+				testBit(INDEX_L, 1);
+				break;
+			}
+			
+			case 0x4F:{
+				testBit(INDEX_A, 1);
+				break;
+			}
+			
+			case 0x50:{
+				testBit(INDEX_B, 2);
+				break;
+			}
+			
+			case 0x51:{
+				testBit(INDEX_C, 2);
+				break;
+			}
+			
+			case 0x52:{
+				testBit(INDEX_D, 2);
+				break;
+			}
+			
+			case 0x53:{
+				testBit(INDEX_E, 2);
+				break;
+			}
+			
+			case 0x54:{
+				testBit(INDEX_H, 2);
+				break;
+			}
+			
+			case 0x55:{
+				testBit(INDEX_L, 2);
+				break;
+			}
+			
+			case 0x57:{
+				testBit(INDEX_A, 2);
+				break;
+			}
+			
+			case 0x58:{
+				testBit(INDEX_B, 3);
+				break;
+			}
+			
+			case 0x59:{
+				testBit(INDEX_C, 3);
+				break;
+			}
+			
+			case 0x5A:{
+				testBit(INDEX_D, 3);
+				break;
+			}
+			
+			case 0x5B:{
+				testBit(INDEX_E, 3);
+				break;
+			}
+			
+			case 0x5C:{
+				testBit(INDEX_H, 3);
+				break;
+			}
+			
+			case 0x5D:{
+				testBit(INDEX_L, 3);
+				break;
+			}
+			
+			case 0x5F:{
+				testBit(INDEX_A, 3);
+				break;
+			}
+			
+			case 0x60:{
+				testBit(INDEX_B, 4);
+				break;
+			}
+			
+			case 0x61:{
+				testBit(INDEX_C, 4);
+				break;
+			}
+			
+			case 0x62:{
+				testBit(INDEX_D, 4);
+				break;
+			}
+			
+			case 0x63:{
+				testBit(INDEX_E, 4);
+				break;
+			}
+			
+			case 0x64:{
+				testBit(INDEX_H, 4);
+				break;
+			}
+			
+			case 0x65:{
+				testBit(INDEX_L, 4);
+				break;
+			}
+			
+			case 0x67:{
+				testBit(INDEX_A, 4);
+				break;
+			}
+			
+			//TODO: bit tests for bits 5-7
 			
 				default:
 					System.err.println("Unsupported opcode : CB "+Integer.toHexString(currentOpcode).toUpperCase());
@@ -3336,7 +3509,7 @@ public class CPU extends Thread{
 			else
 				registers[INDEX_F] &= ~HALF_CARRY_BIT;
 			
-			registers[INDEX_C] = result;
+			registers[INDEX_C] = (char) (result%0x100);
 			
 			M += 1;
 			T += 4;
@@ -5933,6 +6106,19 @@ public class CPU extends Thread{
 			setFlags(ZERO_BIT);
 		else
 			resetFlags(ZERO_BIT);
+		
+		M += 2;
+		T += 8;
+	}
+	
+	private void testBit(int regIndex, int bitIndex){
+		char bit = (char)((registers[regIndex] >> bitIndex) & 0x1);
+		
+		if(bit > 0)	resetFlags(ZERO_BIT);
+		else		setFlags(ZERO_BIT);
+		
+		resetFlags(OP_BIT);
+		setFlags(HALF_CARRY_BIT);
 		
 		M += 2;
 		T += 8;

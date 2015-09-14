@@ -338,12 +338,12 @@ public class LCDController extends Thread{
 			char[] spriteAtts = spriteAttsArray[i];
 
 			char x = spriteAtts[0];
-			char y = (char) (spriteAtts[1] - 8);
+			char y = spriteAtts[1];
 			char index = spriteAtts[2];
 			char flags = spriteAtts[3];//TODO
 			int lineIndex = this.y - y;
 			
-			if(lineIndex < 0 || lineIndex >= 8) //this is wrong
+			if(lineIndex < 0 || lineIndex >= 8)
 				continue; 
 			
 			//this hides the sprite

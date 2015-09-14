@@ -306,7 +306,7 @@ public class Memory {
 			case 0: break;
 			case 1: {
 				if((address >= 0x4000 && address < 0x8000) && currentRomBankAddr > 0){
-					return (char)(mbc1Banks[currentRomBankAddr - 1][address % mbc1Offset] & 0xFF);
+					return (mbc1Banks[currentRomBankAddr - 1][address % mbc1Offset]);
 				}
 				break;
 			}

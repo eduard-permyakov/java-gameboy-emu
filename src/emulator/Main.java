@@ -12,16 +12,12 @@ public class Main{
 	public Main() {
 		gameBoy = new GameBoy();
 		
-//		char a = 0xdf;
-//		char b = 0xff;
-//		char c = (char)(a << 8 | b);
-//		
-//		System.out.println(Integer.toHexString(c));
-		
 		romLoader = new RomLoader(gameBoy);
 //		romLoader.loadROM("./TestROMs/Super Mario Land (World).gb");
 //		romLoader.loadROM("./TestROMs/cpu_instrs.gb");
-		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
+//		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
+//		romLoader.loadROM("./TestROMs/GuessTheNumber_1.gb");
+		romLoader.loadROM("./TestROMs/Bounce.gb");
 //		romLoader.loadROM("./TestROMs/Tetris.gb");
 //		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
 		
@@ -34,9 +30,9 @@ public class Main{
 //		romLoader.loadROM("./TestROMs/individual/06-ld r,r.gb");// <-- PASSED
 //		romLoader.loadROM("./TestROMs/individual/07-jr,jp,call,ret,rst.gb");// <-- PASSED
 //		romLoader.loadROM("./TestROMs/individual/08-misc instrs.gb"); //err
-//		romLoader.loadROM("./TestROMs/individual/09-op r,r.gb"); //read/write related err
+//		romLoader.loadROM("./TestROMs/individual/09-op r,r.gb"); // <-- PASSED
 //		romLoader.loadROM("./TestROMs/individual/10-bit ops.gb");
-//		romLoader.loadROM("./TestROMs/individual/11-op a,(hl).gb"); //read/write related err
+//		romLoader.loadROM("./TestROMs/individual/11-op a,(hl).gb"); //err
 
 		
 		gameBoy.start();
