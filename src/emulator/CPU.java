@@ -100,6 +100,7 @@ public class CPU extends Thread{
 					
 					if(IME)
 						serviceInterrrupts();
+					
 					fetchNextOpcode();
 					decodeAndExecuteOpcode();
 				}
@@ -189,130 +190,6 @@ public class CPU extends Thread{
 //			System.out.println(" " + Integer.toHexString(currentOpcode).toUpperCase());
 			
 			switch(currentOpcode){
-			
-			case 0x7C: {
-				char testBit = (char)((registers[INDEX_H] & 0x80) >> 7);
-				
-				if(testBit == 0)
-					registers[INDEX_F] |= ZERO_BIT;
-				else
-					registers[INDEX_F] &= ~ZERO_BIT;
-				
-				registers[INDEX_F] &= ~OP_BIT;
-				registers[INDEX_F] |= HALF_CARRY_BIT;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-//			case 0x11: {
-//				char carryFlag = (char)(((registers[INDEX_F]) >> 4) & 0x1);
-//				
-//				if(((registers[INDEX_C] >> 7) &0x1) > 0)
-//					registers[INDEX_F] |= CARRY_BIT;
-//				else
-//					registers[INDEX_F] &= ~CARRY_BIT;
-//				
-//				registers[INDEX_F] &= ~OP_BIT;
-//				registers[INDEX_F] &= ~HALF_CARRY_BIT;
-//				
-//				registers[INDEX_C] = (char)(((registers[INDEX_C] << 1) | carryFlag) & 0xFF);
-//				
-//				if(registers[INDEX_C] == 0)
-//					registers[INDEX_F] |= ZERO_BIT;
-//				else
-//					registers[INDEX_F] &= ~ZERO_BIT;
-//
-//				
-//				
-//				M += 1;
-//				T += 4;
-//				
-//				break;
-//			}
-			
-//			case 0x37:{
-//				
-//				char upperNibble = (char) ((registers[INDEX_A] >> 4) & 0xF);
-//				char lowerNibble = (char) (registers[INDEX_A] & 0xF);
-//				registers[INDEX_A] = (char)((lowerNibble << 4) | upperNibble);
-//				
-//				if(registers[INDEX_A] == 0)
-//					registers[INDEX_F] |= ZERO_BIT;
-//				else
-//					registers[INDEX_F] &= ~ZERO_BIT;
-//				registers[INDEX_F] &= ~(OP_BIT | HALF_CARRY_BIT | CARRY_BIT);
-//				
-//				M += 2;
-//				T += 8;
-//				
-//				break;
-//			}
-			
-			case 0x87:{
-				registers[INDEX_A] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-			case 0x80:{
-				registers[INDEX_B] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-			case 0x81:{
-				registers[INDEX_C] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-			case 0x82:{
-				registers[INDEX_D] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-			case 0x83:{
-				registers[INDEX_E] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-			case 0x84:{
-				registers[INDEX_H] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
-			
-			case 0x85:{
-				registers[INDEX_L] &= ~1;
-				
-				M += 2;
-				T += 8;
-				
-				break;
-			}
 			
 			//SHIFT RIGHT INTO CARRY
 			
@@ -1375,7 +1252,174 @@ public class CPU extends Thread{
 				break;
 			}
 			
-			//TODO: bit tests for bits 5-7
+			case 0x68:{
+				testBit(INDEX_B, 5);
+				break;
+			}
+			
+			case 0x69:{
+				testBit(INDEX_C, 5);
+				break;
+			}
+			
+			case 0x6A:{
+				testBit(INDEX_D, 5);
+				break;
+			}
+			
+			case 0x6B:{
+				testBit(INDEX_E, 5);
+				break;
+			}
+			
+			case 0x6C:{
+				testBit(INDEX_H, 5);
+				break;
+			}
+			
+			case 0x6D:{
+				testBit(INDEX_L, 5);
+				break;
+			}
+			
+			case 0x6F:{
+				testBit(INDEX_A, 5);
+				break;
+			}
+			
+			case 0x70:{
+				testBit(INDEX_B, 6);
+				break;
+			}
+			
+			case 0x71:{
+				testBit(INDEX_C, 6);
+				break;
+			}
+			
+			case 0x72:{
+				testBit(INDEX_D, 6);
+				break;
+			}
+			
+			case 0x73:{
+				testBit(INDEX_E, 6);
+				break;
+			}
+			
+			case 0x74:{
+				testBit(INDEX_H, 6);
+				break;
+			}
+			
+			case 0x75:{
+				testBit(INDEX_L, 6);
+				break;
+			}
+			
+			case 0x77:{
+				testBit(INDEX_A, 6);
+				break;
+			}
+			
+			case 0x78:{
+				testBit(INDEX_B, 7);
+				break;
+			}
+			
+			case 0x79:{
+				testBit(INDEX_C, 7);
+				break;
+			}
+			
+			case 0x7A:{
+				testBit(INDEX_D, 7);
+				break;
+			}
+			
+			case 0x7B:{
+				testBit(INDEX_E, 7);
+				break;
+			}
+			
+			case 0x7C:{
+				testBit(INDEX_H, 7);
+				break;
+			}
+			
+			case 0x7D:{
+				testBit(INDEX_L, 7);
+				break;
+			}
+			
+			case 0x7F:{
+				testBit(INDEX_A, 7);
+				break;
+			}
+			
+			case 0x80:	resetBit(INDEX_B, 0);	break;
+			case 0x81:	resetBit(INDEX_C, 0);	break;
+			case 0x82:	resetBit(INDEX_D, 0);	break;
+			case 0x83:	resetBit(INDEX_E, 0);	break;
+			case 0x84:	resetBit(INDEX_H, 0);	break;
+			case 0x85:	resetBit(INDEX_L, 0);	break;
+			case 0x87:	resetBit(INDEX_A, 0);	break;
+
+			case 0x88:	resetBit(INDEX_B, 1);	break;
+			case 0x89:	resetBit(INDEX_C, 1);	break;
+			case 0x8A:	resetBit(INDEX_D, 1);	break;
+			case 0x8B:	resetBit(INDEX_E, 1);	break;
+			case 0x8C:	resetBit(INDEX_H, 1);	break;
+			case 0x8D:	resetBit(INDEX_L, 1);	break;
+			case 0x8F:	resetBit(INDEX_A, 1);	break;
+			
+			case 0x90:	resetBit(INDEX_B, 2);	break;
+			case 0x91:	resetBit(INDEX_C, 2);	break;
+			case 0x92:	resetBit(INDEX_D, 2);	break;
+			case 0x93:	resetBit(INDEX_E, 2);	break;
+			case 0x94:	resetBit(INDEX_H, 2);	break;
+			case 0x95:	resetBit(INDEX_L, 2);	break;
+			case 0x97:	resetBit(INDEX_A, 2);	break;
+
+			case 0x98:	resetBit(INDEX_B, 3);	break;
+			case 0x99:	resetBit(INDEX_C, 3);	break;
+			case 0x9A:	resetBit(INDEX_D, 3);	break;
+			case 0x9B:	resetBit(INDEX_E, 3);	break;
+			case 0x9C:	resetBit(INDEX_H, 3);	break;
+			case 0x9D:	resetBit(INDEX_L, 3);	break;
+			case 0x9F:	resetBit(INDEX_A, 3);	break;
+			
+			case 0xA0:	resetBit(INDEX_B, 4);	break;
+			case 0xA1:	resetBit(INDEX_C, 4);	break;
+			case 0xA2:	resetBit(INDEX_D, 4);	break;
+			case 0xA3:	resetBit(INDEX_E, 4);	break;
+			case 0xA4:	resetBit(INDEX_H, 4);	break;
+			case 0xA5:	resetBit(INDEX_L, 4);	break;
+			case 0xA7:	resetBit(INDEX_A, 4);	break;
+
+			case 0xA8:	resetBit(INDEX_B, 5);	break;
+			case 0xA9:	resetBit(INDEX_C, 5);	break;
+			case 0xAA:	resetBit(INDEX_D, 5);	break;
+			case 0xAB:	resetBit(INDEX_E, 5);	break;
+			case 0xAC:	resetBit(INDEX_H, 5);	break;
+			case 0xAD:	resetBit(INDEX_L, 5);	break;
+			case 0xAF:	resetBit(INDEX_A, 5);	break;
+			
+			case 0xB0:	resetBit(INDEX_B, 6);	break;
+			case 0xB1:	resetBit(INDEX_C, 6);	break;
+			case 0xB2:	resetBit(INDEX_D, 6);	break;
+			case 0xB3:	resetBit(INDEX_E, 6);	break;
+			case 0xB4:	resetBit(INDEX_H, 6);	break;
+			case 0xB5:	resetBit(INDEX_L, 6);	break;
+			case 0xB7:	resetBit(INDEX_A, 6);	break;
+
+			case 0xB8:	resetBit(INDEX_B, 7);	break;
+			case 0xB9:	resetBit(INDEX_C, 7);	break;
+			case 0xBA:	resetBit(INDEX_D, 7);	break;
+			case 0xBB:	resetBit(INDEX_E, 7);	break;
+			case 0xBC:	resetBit(INDEX_H, 7);	break;
+			case 0xBD:	resetBit(INDEX_L, 7);	break;
+			case 0xBF:	resetBit(INDEX_A, 7);	break;
 			
 				default:
 					System.err.println("Unsupported opcode : CB "+Integer.toHexString(currentOpcode).toUpperCase());
@@ -6119,6 +6163,20 @@ public class CPU extends Thread{
 		
 		resetFlags(OP_BIT);
 		setFlags(HALF_CARRY_BIT);
+		
+		M += 2;
+		T += 8;
+	}
+	
+	private void setBit(int regIndex, int bitIndex){
+		registers[regIndex] |= 1 << bitIndex;
+		
+		M += 2;
+		T += 8;
+	}
+	
+	private void resetBit(int regIndex, int bitIndex){
+		registers[regIndex] &= ~ (1 << bitIndex);
 		
 		M += 2;
 		T += 8;
