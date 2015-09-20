@@ -92,6 +92,8 @@ public class ScreenPanel extends JPanel{
 	
 	public void setBackgroundAndWindowColors(Color c1, Color c2, Color c3, Color c4){
 		
+		System.out.println("Setting bg colors: " +c1 +", " +c2+", "+c3+", "+c4);
+		
 		backgroundColor1 = c1;
 		backgroundColor2 = c2;
 		backgroundColor3 = c3;
@@ -101,6 +103,8 @@ public class ScreenPanel extends JPanel{
 	
 	public void setObject0Colors(Color c1, Color c2, Color c3, Color c4){
 		
+		System.out.println("Setting obj0 colors: " +c1 +", " +c2+", "+c3+", "+c4);
+		
 		obj0Color1 = c1;
 		obj0Color2 = c2;
 		obj0Color3 = c3;
@@ -109,6 +113,8 @@ public class ScreenPanel extends JPanel{
 	}
 	
 	public void setObject1Colors(Color c1, Color c2, Color c3, Color c4){
+		
+		System.out.println("Setting obj1 colors: " +c1 +", " +c2+", "+c3+", "+c4);
 		
 		obj1Color1 = c1;
 		obj1Color2 = c2;

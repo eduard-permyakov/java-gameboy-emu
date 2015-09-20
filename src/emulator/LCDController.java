@@ -1,9 +1,6 @@
 package emulator;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
 
 enum LCDControllerState{
 	LCD_STATE_HBLANK,
@@ -142,7 +139,6 @@ public class LCDController extends Thread{
 	 * */
 	
 	
-	//TODO: do none of this if the LCD is disabled still
 	public void run(){
 		
 		if(!lcdEnabled){

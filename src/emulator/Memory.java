@@ -190,10 +190,10 @@ public class Memory {
 					color = Color.white;
 					break;
 				case 0b01:
-					color = Color.white;
+					color = Color.lightGray;
 					break;
 				case 0b10:
-					color = Color.black;
+					color = Color.darkGray;
 					break;
 				case 0b11:
 					color = Color.black;

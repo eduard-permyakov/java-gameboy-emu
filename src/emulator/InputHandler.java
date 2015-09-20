@@ -27,7 +27,7 @@ public class InputHandler implements KeyListener {
 	}
 	
 	@Override
-	public void keyPressed(KeyEvent event) {
+	public synchronized void keyPressed(KeyEvent event) {
 //		System.out.println("P14 low: " + isP14Low());
 //		System.out.println("P15 low: " + isP15Low());
 		this.pressedKeyCodes.add(event.getKeyCode());
@@ -37,7 +37,7 @@ public class InputHandler implements KeyListener {
 	}
 
 	@Override
-	public void keyReleased(KeyEvent event) {
+	public synchronized void keyReleased(KeyEvent event) {
 		this.pressedKeyCodes.remove((Object)event.getKeyCode());
 		updateJoypadRegisterForRelease(event);
 	}
@@ -55,7 +55,7 @@ public class InputHandler implements KeyListener {
 		return (joypadRegVal & 0x20) == 0;
 	}
 	
-	private synchronized void updateJoypadRegisterForRelease(KeyEvent event){
+	private void updateJoypadRegisterForRelease(KeyEvent event){
 		
 		char joypadReg = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
 		
@@ -78,7 +78,7 @@ public class InputHandler implements KeyListener {
 		
 	}
 	
-	private synchronized void updateJoypadRegisterForPress(KeyEvent event){
+	private void updateJoypadRegisterForPress(KeyEvent event){
 		
 		char joypadReg = gameBoy.memory.readByte(InputHandler.JOYPAD_ADDR);
 		

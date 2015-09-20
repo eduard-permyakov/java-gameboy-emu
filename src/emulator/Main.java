@@ -1,7 +1,5 @@
 package emulator;
 
-import java.util.concurrent.TimeUnit;
-
 public class Main{
 	
 	private GameBoy gameBoy;
@@ -15,9 +13,9 @@ public class Main{
 		romLoader = new RomLoader(gameBoy);
 //		romLoader.loadROM("./TestROMs/Super Mario Land (World).gb");
 //		romLoader.loadROM("./TestROMs/cpu_instrs.gb");
-		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
+//		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
 //		romLoader.loadROM("./TestROMs/GuessTheNumber_1.gb");
-//		romLoader.loadROM("./TestROMs/Bounce.gb");
+		romLoader.loadROM("./TestROMs/TCFOS.GB");
 //		romLoader.loadROM("./TestROMs/Tetris.gb");
 //		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
 		
@@ -33,14 +31,13 @@ public class Main{
 //		romLoader.loadROM("./TestROMs/individual/09-op r,r.gb"); // <-- PASSED
 //		romLoader.loadROM("./TestROMs/individual/10-bit ops.gb");
 //		romLoader.loadROM("./TestROMs/individual/11-op a,(hl).gb"); //err
-
 		
 		gameBoy.start();
 		
 	}
 	
 	public static void main(String[] args) {
-		Main main = new Main();
+		new Main();
 	}
 
 }

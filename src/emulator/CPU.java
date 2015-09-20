@@ -140,7 +140,7 @@ public class CPU extends Thread{
 	}
 	
 	private void serviceInterrrupts(){
-		System.out.println("service interrupts");
+		//System.out.println("service interrupts");
 	}
 	
 	private void execStoppedState(){
@@ -1357,6 +1357,8 @@ public class CPU extends Thread{
 				break;
 			}
 			
+			//reset bits
+			
 			case 0x80:	resetBit(INDEX_B, 0);	break;
 			case 0x81:	resetBit(INDEX_C, 0);	break;
 			case 0x82:	resetBit(INDEX_D, 0);	break;
@@ -1420,6 +1422,72 @@ public class CPU extends Thread{
 			case 0xBC:	resetBit(INDEX_H, 7);	break;
 			case 0xBD:	resetBit(INDEX_L, 7);	break;
 			case 0xBF:	resetBit(INDEX_A, 7);	break;
+			
+			//set bits
+			
+			case 0xC0:	setBit(INDEX_B, 0);		break;
+			case 0xC1:	setBit(INDEX_C, 0);		break;
+			case 0xC2:	setBit(INDEX_D, 0);		break;
+			case 0xC3:	setBit(INDEX_E, 0);		break;
+			case 0xC4:	setBit(INDEX_H, 0);		break;
+			case 0xC5:	setBit(INDEX_L, 0);		break;
+			case 0xC7:	setBit(INDEX_A, 0);		break;
+
+			case 0xC8:	setBit(INDEX_B, 1);		break;
+			case 0xC9:	setBit(INDEX_C, 1);		break;
+			case 0xCA:	setBit(INDEX_D, 1);		break;
+			case 0xCB:	setBit(INDEX_E, 1);		break;
+			case 0xCC:	setBit(INDEX_H, 1);		break;
+			case 0xCD:	setBit(INDEX_L, 1);		break;
+			case 0xCF:	setBit(INDEX_A, 1);		break;
+			
+			case 0xD0:	setBit(INDEX_B, 2);		break;
+			case 0xD1:	setBit(INDEX_C, 2);		break;
+			case 0xD2:	setBit(INDEX_D, 2);		break;
+			case 0xD3:	setBit(INDEX_E, 2);		break;
+			case 0xD4:	setBit(INDEX_H, 2);		break;
+			case 0xD5:	setBit(INDEX_L, 2);		break;
+			case 0xD7:	setBit(INDEX_A, 2);		break;
+
+			case 0xD8:	setBit(INDEX_B, 3);		break;
+			case 0xD9:	setBit(INDEX_C, 3);		break;
+			case 0xDA:	setBit(INDEX_D, 3);		break;
+			case 0xDB:	setBit(INDEX_E, 3);		break;
+			case 0xDC:	setBit(INDEX_H, 3);		break;
+			case 0xDD:	setBit(INDEX_L, 3);		break;
+			case 0xDF:	setBit(INDEX_A, 3);		break;
+			
+			case 0xE0:	setBit(INDEX_B, 4);		break;
+			case 0xE1:	setBit(INDEX_C, 4);		break;
+			case 0xE2:	setBit(INDEX_D, 4);		break;
+			case 0xE3:	setBit(INDEX_E, 4);		break;
+			case 0xE4:	setBit(INDEX_H, 4);		break;
+			case 0xE5:	setBit(INDEX_L, 4);		break;
+			case 0xE7:	setBit(INDEX_A, 4);		break;
+
+			case 0xE8:	setBit(INDEX_B, 5);		break;
+			case 0xE9:	setBit(INDEX_C, 5);		break;
+			case 0xEA:	setBit(INDEX_D, 5);		break;
+			case 0xEB:	setBit(INDEX_E, 5);		break;
+			case 0xEC:	setBit(INDEX_H, 5);		break;
+			case 0xED:	setBit(INDEX_L, 5);		break;
+			case 0xEF:	setBit(INDEX_A, 5);		break;
+			
+			case 0xF0:	setBit(INDEX_B, 6);		break;
+			case 0xF1:	setBit(INDEX_C, 6);		break;
+			case 0xF2:	setBit(INDEX_D, 6);		break;
+			case 0xF3:	setBit(INDEX_E, 6);		break;
+			case 0xF4:	setBit(INDEX_H, 6);		break;
+			case 0xF5:	setBit(INDEX_L, 6);		break;
+			case 0xF7:	setBit(INDEX_A, 6);		break;
+
+			case 0xF8:	setBit(INDEX_B, 7);		break;
+			case 0xF9:	setBit(INDEX_C, 7);		break;
+			case 0xFA:	setBit(INDEX_D, 7);		break;
+			case 0xFB:	setBit(INDEX_E, 7);		break;
+			case 0xFC:	setBit(INDEX_H, 7);		break;
+			case 0xFD:	setBit(INDEX_L, 7);		break;
+			case 0xFF:	setBit(INDEX_A, 7);		break;
 			
 				default:
 					System.err.println("Unsupported opcode : CB "+Integer.toHexString(currentOpcode).toUpperCase());
