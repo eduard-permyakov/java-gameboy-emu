@@ -30,7 +30,6 @@ public class RomLoader {
 					gameBoy.memory.setMemoryBankingMode(readByte);
 				}else{
 					gameBoy.memory.writeROMByte(0x0000 + offset, (char)(input.readByte() & 0xFF));
-
 				}
 				offset++;
 			}

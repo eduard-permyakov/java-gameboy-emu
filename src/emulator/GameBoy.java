@@ -7,7 +7,9 @@ import emulator.LCDController;
 
 public class GameBoy extends Thread{
 	
-	int old_y = 9; //shouldn't be 0 at start
+	public final static int INTERRUPT_FLAG_REGISTER_ADDR = 0xFF0F;
+	
+	private int old_y = 9; //shouldn't be 0 at start
 	boolean reset = false;
 	
 	public boolean lcdControllerIsIdle;
@@ -60,9 +62,40 @@ public class GameBoy extends Thread{
 //		}
 //	}
 	
-	public void interruptCPU(Interrupt type){
-		if(cpu.interruptsEnabled())
-			cpu.interrupt(type);
+	public void requestInterrupt(Interrupt type){
+		
+		switch(type){
+		case InterruptVBlank:					
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x01, true, HardwareType.Interrupt); break;
+		case InterruptLCDC:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x02, true, HardwareType.Interrupt); break;
+		case InterruptTimerOverflow:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x04, true, HardwareType.Interrupt); break;
+		case InterruptSerialIOTransferComplete:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x08, true, HardwareType.Interrupt); break;
+		case InterruptJoypad:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x10, true, HardwareType.Interrupt); break;
+		}
+		
+//		if(cpu.interruptsEnabled())
+//			cpu.interrupt(type);
+	}
+	
+	public void stopRequestingInterrupt(Interrupt type){
+		
+		switch(type){
+		case InterruptVBlank:					
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x01, false, HardwareType.Interrupt); break;
+		case InterruptLCDC:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x02, false, HardwareType.Interrupt); break;
+		case InterruptTimerOverflow:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x04, false, HardwareType.Interrupt); break;
+		case InterruptSerialIOTransferComplete:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x08, false, HardwareType.Interrupt); break;
+		case InterruptJoypad:
+			memory.setMask(INTERRUPT_FLAG_REGISTER_ADDR, (char)0x10, false, HardwareType.Interrupt); break;
+		}
+		
 	}
 	
 	public void resumeCPUExecution(){
@@ -75,7 +108,7 @@ public class GameBoy extends Thread{
 		cpu.setState(CPUState.CPU_STATE_EXECUTING);
 	}
 	
-	public void projectRow(int row, char[] pixelsArray){
+	public void projectRow(int row, PixelData[] pixelsArray){
 		screenFrame.screenPanel.paintRow(row, pixelsArray);
 	}
 	

@@ -59,13 +59,14 @@ public class CPU extends Thread{
 	private char currentOpcode;
 	
 	private boolean IME = true;
-	private Interrupt currInterrupt = null;
+//	private Interrupt currInterrupt = null;
 	
 	private int cntUntinEnableInterrupt = -1;
 	private int cntUntilDisableInterrupt = -1;
 	
 	private boolean isStopped = false;
-	
+//	currInterrupt = type;
+
 	public CPU(GameBoy gameBoy, CyclicBarrier barrier) {
 		this.gameBoy = gameBoy;
 		this.barrier = barrier;
@@ -79,10 +80,9 @@ public class CPU extends Thread{
 	}
 	
 	
-	public synchronized void interrupt(Interrupt type){
-		System.out.println("--- interrupted ---");
-		currInterrupt = type;
-	}
+//	public synchronized void interrupt(Interrupt type){
+//		System.out.println("--- interrupted ---");
+//	}
 	
 	public void run(){
 		while(true){
@@ -140,7 +140,42 @@ public class CPU extends Thread{
 	}
 	
 	private void serviceInterrrupts(){
-		//System.out.println("service interrupts");
+		
+		char interruptReg = gameBoy.memory.readByte(GameBoy.INTERRUPT_FLAG_REGISTER_ADDR);
+		for(int i = 0; i < 5; i++){
+			int bit = (interruptReg >> i) & 0x1;
+			if(bit > 0){
+				
+				char ieEnableReg = gameBoy.memory.readByte(0xFFFF);
+				if(((ieEnableReg >> i) & 0x1) == 0)
+					continue;
+				
+				//disable interrupts
+				IME = false;
+				
+				//clear interrupt request bit
+				interruptReg &= ~(0x1 << i);
+				gameBoy.memory.writeByte(GameBoy.INTERRUPT_FLAG_REGISTER_ADDR, interruptReg, HardwareType.Interrupt);
+				
+				//Push PC onto stack
+				sp --;
+				gameBoy.memory.writeByte( sp, (char)(pc >> 8) ,HardwareType.CPU);
+				sp --;
+				gameBoy.memory.writeByte( sp, (char)(pc &0xFF) ,HardwareType.CPU);
+				
+				switch(i){
+				case 0:	pc = 0x0040;	break;
+				case 1:	pc = 0x0048;	break;
+				case 2:	pc = 0x0050;	break;
+				case 3:	pc = 0x0058;	break;
+				case 4:	pc = 0x0060;	break;
+					default:	break;
+				}
+				
+				return;
+			}
+		}
+		
 	}
 	
 	private void execStoppedState(){
@@ -155,13 +190,13 @@ public class CPU extends Thread{
 		if(cntUntinEnableInterrupt >= 0){
 			cntUntinEnableInterrupt--;
 			if(cntUntinEnableInterrupt == -1)
-				IME = true; System.out.println("enable interrupts");
+				IME = true; //System.out.println("enable interrupts");
 		}
 		
 		if(cntUntilDisableInterrupt >= 0){
 			cntUntilDisableInterrupt--;
 			if(cntUntilDisableInterrupt == -1)
-				IME = false; System.out.println("disable interrupts");
+				IME = false; //System.out.println("disable interrupts");
 		}
 	}
 	
@@ -176,10 +211,17 @@ public class CPU extends Thread{
 //		System.out.print("pc: " + Integer.toHexString(pc).toUpperCase());
 //		System.out.print(" opcode: " + Integer.toHexString(currentOpcode).toUpperCase() + ((currentOpcode != 0xCB)?"\n":""));
 //		
-//		if(pc == 0x188){
-//			System.out.println("break");
+//		if(pc == 0xFF8D){
+//			System.out.println("-->");
 //		}
-		
+//		
+//		if(pc == 0x3FF){
+//			System.out.println("");
+//		}
+
+//		if(pc == 0x26C0){
+//			System.out.println("stat: " + Integer.toHexString(gameBoy.memory.readByte(LCDController.LCD_REGISTER_ADDR)));
+//		}
 		
 		switch(currentOpcode){
 		
@@ -5559,7 +5601,7 @@ public class CPU extends Thread{
 			pc = (char)((retAddMS << 8) | retAddLS);
 			
 			IME = true;
-			System.out.println("enable itnerrupts");
+			//System.out.println("enable itnerrupts");
 			
 			M += 2;
 			T += 8;

@@ -9,7 +9,8 @@ enum HardwareType {
 	LCDController,
 	Joypad,
 	ROMLoader,
-	Memory
+	Memory,
+	Interrupt
 }
 //TODO: control read access based on type...
 
@@ -82,7 +83,7 @@ public class Memory {
 	}
 	
 	public void writeByte(int address, char data, HardwareType type){
-		 
+				 
 		//This is where we can select the rom bank mode for MBC1
 		switch(this.memoryBankingMode){
 		case 0: break;
@@ -159,8 +160,17 @@ public class Memory {
 			return;
 		}
 		
-		memory[address] = data;			
+		if(address == LCDController.LCD_REGISTER_ADDR){
+			if(type != HardwareType.LCDController){
+				memory[address] &= ~0xFC;
+				memory[address] |= (char) (data & 0xFC);
+				return;
+			}
+
+		}
 		
+		memory[address] = data;		
+
 		//echo the 8kb internal RAM
 		if(address >= 0xC000 && address <  0xE000){
 			int echoAddress = (address + 0x2000);
@@ -170,6 +180,7 @@ public class Memory {
 		
 		//actions based on specific register addresses
 		if(address == LCDController.DMA_REGISTER_ADDR){
+			
 			DMATransfer();
 		}
 		
@@ -211,10 +222,10 @@ public class Memory {
 		//object palette 0; values of 0 transparent
 		if(address == LCDController.OBJ0P_REGISTER_ADDR){
 			
-			char color1val = memory[address];
-			char color2val = (char)(memory[address] >> 2);
-			char color3val = (char)(memory[address] >> 4);
-			char color4val = (char)(memory[address] >> 6);
+			char color1val = (char) (memory[address] & 0b11);
+			char color2val = (char) ((char)(memory[address] >> 2) & 0b11);
+			char color3val = (char) ((char)(memory[address] >> 4) & 0b11);
+			char color4val = (char) ((char)(memory[address] >> 6) & 0b11);
 			char[] colorValsArray = {color1val, color2val, color3val, color4val};
 			Color[] colorsArray = new Color[4];
 			
@@ -246,10 +257,10 @@ public class Memory {
 		//object palette 1; valeus of 0 transparent
 		if(address == LCDController.OBJ1P_REGISTER_ADDR){
 			
-			char color1val = memory[address];
-			char color2val = (char)(memory[address] >> 2);
-			char color3val = (char)(memory[address] >> 4);
-			char color4val = (char)(memory[address] >> 6);
+			char color1val = (char) (memory[address] & 0b11);
+			char color2val = (char) ((char)(memory[address] >> 2) & 0b11);
+			char color3val = (char) ((char)(memory[address] >> 4) & 0b11);
+			char color4val = (char) ((char)(memory[address] >> 6) & 0b11);
 			char[] colorValsArray = {color1val, color2val, color3val, color4val};
 			Color[] colorsArray = new Color[4];
 			
@@ -304,7 +315,7 @@ public class Memory {
 	public char readByte(int address){
 
 		switch(this.memoryBankingMode){
-			case 0: break;
+			case 0: break;	
 			case 1: {
 				if((address >= 0x4000 && address < 0x8000) && currentRomBankAddr > 0){
 					return (mbc1Banks[currentRomBankAddr - 1][address % mbc1Offset]);
@@ -316,10 +327,11 @@ public class Memory {
 		return memory[address];
 	}
 	
+	//TODO: All of the memory space, except high RAM ($FF80-$FFFE), is not accessible during DMA
 	public void DMATransfer() {
-		char sourceAddress = (char)(((memory[LCDController.DMA_REGISTER_ADDR] / 0x100) << 8) | 0x0);
-		char destinationAddress = 0xFE00;
-		for(int i = 0; i <= 0x9F; i++){
+		char sourceAddress = (char)(((memory[LCDController.DMA_REGISTER_ADDR]) << 8) | 0x0);
+		char destinationAddress = SPRITE_ATTRIB_MEMORY_ADDR;
+		for(int i = 0; i <= 0x8C; i++){
 			this.writeByte(destinationAddress + i, memory[sourceAddress + i], HardwareType.Memory);
 //			memory[destinationAddress + i] = memory[sourceAddress + i];
 		}

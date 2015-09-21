@@ -103,7 +103,7 @@ public class InputHandler implements KeyListener {
 	}
 	
 	private void raiseJoypadInterrupt(){
-		gameBoy.interruptCPU(Interrupt.InterruptJoypad);
+		gameBoy.requestInterrupt(Interrupt.InterruptJoypad);
 	}
 
 	public synchronized void updateJoypadRegForInputLineChange(){

@@ -18,6 +18,16 @@ enum PaletteType{
 	private final int value;
 }
 
+class PixelData{
+	public char color;
+	public PaletteType type;
+	
+	public PixelData(char color, PaletteType type){
+		this.color = color;
+		this.type = type;
+	}
+}
+
 public class LCDController extends Thread{
 	
 	private boolean lcdEnabled = true;
@@ -33,8 +43,8 @@ public class LCDController extends Thread{
 	private char[][] spriteAttsArray;
 	private char[][] spritesArray;
 	private char[] bgDataArray;
-	private char[] linePixelArray;
-	private char[] linePixelTypeArray;
+	private PixelData[] linePixelArray;
+//	private PaletteType[] linePixelTypeArray;
 
 	private GameBoy gameBoy;
 	private CyclicBarrier barrier;
@@ -124,8 +134,8 @@ public class LCDController extends Thread{
 		spriteAttsArray 	= new char[40][4];
 		spritesArray 		= new char[384][16];
 		bgDataArray 		= new char[1024];
-		linePixelArray		= new char[256];
-		linePixelTypeArray 	= new char[256];
+		linePixelArray		= new PixelData[256];
+//		linePixelTypeArray 	= new PaletteType[256];
 	}
 	//TODO:
 	/*
@@ -155,8 +165,9 @@ public class LCDController extends Thread{
 
 		updateScrollValues();
 		winPosX = gameBoy.memory.readByte(WX_REGISTER_ADDR);
-
 		
+		char statReg = gameBoy.memory.readByte(LCDController.LCD_REGISTER_ADDR);
+
 		switch(this.state){
 		case LCD_STATE_HBLANK:
 			
@@ -174,6 +185,9 @@ public class LCDController extends Thread{
 //			if(y > 143)
 //				y = 0;
 			
+			if(((statReg >> 3) & 0x1) > 0)
+				generateStatInterrupt();
+			
 			makeLinePixelArray();
 			gameBoy.projectRow(y, linePixelArray);
 			
@@ -181,15 +195,30 @@ public class LCDController extends Thread{
 				
 			break;
 		case LCD_STATE_VBLANK:
+			
+			if(y == 144)
+				gameBoy.requestInterrupt(Interrupt.InterruptVBlank);
+			else
+				gameBoy.stopRequestingInterrupt(Interrupt.InterruptVBlank);
+
+
+			if(((statReg >> 4) & 0x1) > 0)
+				generateStatInterrupt();
+			
 //			System.out.println("LY at start of VBLANK: " + (int)y);
 			winPosY = gameBoy.memory.readByte(WY_REGISTER_ADDR);
 			
 			y++;
+			
 //			if(y > 152)
 //				y = 0;
 				
 			break;
 		case LCD_STATE_READING_OAM_ONLY:
+			
+			if(((statReg >> 5) & 0x1) > 0)
+				generateStatInterrupt();
+			
 			readOAM();
 				
 			break;
@@ -218,7 +247,7 @@ public class LCDController extends Thread{
 	
 	private void updateStatusRegister(){
 		//LCD status register
-		gameBoy.memory.setMask(LCD_REGISTER_ADDR, (char)0x80, true, HardwareType.LCDController);
+//		gameBoy.memory.setMask(LCD_REGISTER_ADDR, (char)0x80, true, HardwareType.LCDController);
 		
 //		if(gameBoy.memory.readByte(LCD_REGISTER_ADDR) == y){
 //			gameBoy.memory.setMask(LCD_REGISTER_ADDR, LYC_EQ_LY_COINCIDEN_INTERRUPT, true, HardwareType.LCDController);
@@ -273,7 +302,12 @@ public class LCDController extends Thread{
 	
 	private void updateLYRegister() {
 //		System.out.println(Integer.toString(y));
+//		System.out.println("update ly: " + (int)y);
 		gameBoy.memory.writeByte(LY_REGISTER_ADDR, y, HardwareType.LCDController);
+	}
+	
+	private void generateStatInterrupt(){
+		gameBoy.requestInterrupt(Interrupt.InterruptLCDC);
 	}
 	
 	private void readOAM(){
@@ -320,21 +354,26 @@ public class LCDController extends Thread{
 		//first "draw" the background tiles
 		for(int i = 0; i < 32; i++){
 
-			char[] sprite = spritesArray[bgDataArray[(bgTileBaseIndex+i) % 1024]]; //....
+			char[] sprite = spritesArray[bgDataArray[(bgTileBaseIndex+i)]]; //....
 			int rowBitSequence = ((sprite[2*yCoordinate] << 8) | sprite[2*yCoordinate+1]);
 
+//			System.out.println(String.format("%16s", Integer.toBinaryString(rowBitSequence)).replace(' ', '0'));
 			for(int j = 0; j < 8; j++){
-				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
-				linePixelArray[8*i+j] = color;
+				final char color = (char)((rowBitSequence >> (7-j)) & 0b11);
+//				System.out.println("color " +j + ": " + String.format("%2s", Integer.toBinaryString(color)).replace(' ', '0'));
+				linePixelArray[8*i+j] = new PixelData(color, PaletteType.PaletteTypeBackground);
 			}
+			
+//			if(rowBitSequence > 0)
+//				System.out.println("break");
 		}
 		
 		//now go through all the objects
 		for(int i = 0; i < 40; i++){
 			char[] spriteAtts = spriteAttsArray[i];
 
-			char x = spriteAtts[0];
-			char y = spriteAtts[1];
+			char y = (char) (spriteAtts[0] - 16);
+			char x = (char) (spriteAtts[1] - 8);
 			char index = spriteAtts[2];
 			char flags = spriteAtts[3];//TODO
 			int lineIndex = this.y - y;
@@ -343,18 +382,21 @@ public class LCDController extends Thread{
 				continue; 
 			
 			//this hides the sprite
-			if(y == 0 && x == 0)
+			if(y == 0 || x == 0)
 				continue;
 			
-			gameBoy.setDebugFlag();
+			//gameBoy.setDebugFlag();
 			
 			char[] sprite = spritesArray[index];
 			int rowBitSequence = ((sprite[2*lineIndex] << 8) | sprite[2*lineIndex+1]);
 
 			for(int j = 0; j < 8; j++){
-				final char color = (char)((rowBitSequence >> (14-j)) & 0b11);
-				if(color != 0 && color !=1) //color 0 is transparent for sprites //TOOD: fix this temp. hack
-					linePixelArray[x+j] = color;
+				final char color = (char)((rowBitSequence >> (7-j)) & 0b11);
+				//TODO: resolve < 256
+				if(color != 0 && (x+j) < 256) {//color 0 is transparent for sprites
+					linePixelArray[x+j].color = color;
+					linePixelArray[x+j].type = PaletteType.PaletteTypeObject0; //TODO: also might be obj1
+				}
 			}
 		}
 		

@@ -16,6 +16,7 @@ public class Main{
 //		romLoader.loadROM("./TestROMs/GBTICTAC.GB");
 //		romLoader.loadROM("./TestROMs/GuessTheNumber_1.gb");
 		romLoader.loadROM("./TestROMs/TCFOS.GB");
+//		romLoader.loadROM("./TestROMs/pong.GB");
 //		romLoader.loadROM("./TestROMs/Tetris.gb");
 //		romLoader.loadROM("./TestROMs/BOOTSTRAP.bin");
 		
