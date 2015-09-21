@@ -24,3 +24,7 @@ Start - Space
 Select - Enter
 <br/>
 Directional Buttons - Arrow Keys
+
+<b>Selecting ROMs</b>
+<br>
+Only possible by modifying code at the moment (Main.java)
